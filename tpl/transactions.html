@@ -1,0 +1,89 @@
+<load target="js/jquery.jtruncate.js" />
+<load target="js/transactions.js" />
+<include target="header.html" />
+
+<div cond="$XE_VALIDATOR_MESSAGE" class="message {$XE_VALIDATOR_MESSAGE_TYPE}">
+        <p>{$XE_VALIDATOR_MESSAGE}</p>
+</div>
+
+<div class="table even easyList">
+	<table>
+		<thead>
+			<tr>
+				<th>{$lang->order_number}</th>
+				<th>{$lang->status}</th>
+				<th>{$lang->plugin}</th>
+				<th>{$lang->paymethod}</th>
+				<th>{$lang->payment_amount}</th>
+				<th>{$lang->extension}</th>
+				<th>{$lang->regdate}</th>
+			</tr>
+			<tr loop="$list=>$no,$tran">
+				<td><a href="{getUrl('act','dispSvorderAdminOrderDetail','order_srl',$tran->order_srl)}" target="_blank">{$tran->order_srl}</a></td>
+				<td>
+					<select class="payment_state x_span1" data-transaction_srl="{$tran->transaction_srl}">
+						<option selected="selected"|cond="$tran->state == '1'" value="1" >{$lang->state_list['1']}</option>
+						<option selected="selected"|cond="$tran->state == '2'" value="2" >{$lang->state_list['2']}</option>
+						<option selected="selected"|cond="$tran->state == '3'" value="3" >{$lang->state_list['3']}</option>
+					</select>
+				</td>
+				<td><a href="{getUrl('act','dispSvpgAdminUpdatePlugin','plugin_srl',$tran->plugin_srl)}" target="_blank">{$tran->plugin_title}</a></td>
+				<td>{$lang->payment_method[$tran->payment_method]}</td>
+				<td>{number_format($tran->payment_amount)}</td>
+				<td class="long_text"><block loop="unserialize($tran->extra_vars)=>$key,$val">{$key} : <ul cond="is_array($val)"><li loop="$val=>$key2,$val2">{$key2} : {$val2}</li></ul><block cond="!is_array($val)">{$val}</block><br /></block></td>
+				<td>{zdate($tran->regdate)}</td>
+			</tr>
+		</thead>
+	</table>
+</div>
+
+<!-- 페이지 네비게이션 -->
+<div class="pagination a1">
+    <a href="{getUrl('page','','module_srl','')}" class="prevEnd">{$lang->first_page}</a>
+    <!--@while($page_no = $page_navigation->getNextPage())-->
+        <!--@if($page == $page_no)-->
+            <strong>{$page_no}</strong>
+        <!--@else-->
+            <a href="{getUrl('page',$page_no,'module_srl','')}">{$page_no}</a>
+        <!--@end-->
+    <!--@end-->
+    <a href="{getUrl('page',$page_navigation->last_page,'module_srl','')}" class="nextEnd">{$lang->last_page}</a>
+</div>
+
+<form action="./" class="x_modal" method="post" id="viewOrderInfo">
+	<div class="x_modal-header">
+		<h1>주문정보</h1>
+	</div>
+	<div id="orderInfo" class="x_modal-body" style="max-height:600px">
+	</div>
+</form>
+
+<script>
+xe.lang.msg_want_status_change = '{$lang->msg_want_status_change}';
+xe.lang.success_changed = '{$lang->success_changed}';
+jQuery(document).ready(function() {
+    jQuery('.long_text').jTruncate({
+        length: 200,
+        minTrail: 0,
+        moreText: "Read More",
+        lessText: "Read Less"
+	});
+
+	jQuery(".payment_state").change(function (){
+		if(confirm(xe.lang.msg_want_status_change))
+		{
+			var transaction_srl = jQuery(this).attr("data-transaction_srl");
+			var state = jQuery(this).find("option:selected").val();
+
+			var params = new Array();
+			params['transaction_srl'] = transaction_srl;
+			params['state'] = state;
+
+			exec_xml('svpg', 'procSvpgUpdateState', params, function(){
+				alert(xe.lang.success_changed);
+			});
+		}
+		else location.reload();
+	});
+});
+</script>

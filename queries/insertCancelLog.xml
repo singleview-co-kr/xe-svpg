@@ -1,0 +1,33 @@
+<query id="insertCancelLog" action="insert">
+    <tables>
+        <table name="svpg_cancel_log" />
+    </tables>
+    <columns>
+        <column name="original_transaction_srl" var="original_transaction_srl" filter="number" notnull="notnull" />
+		<column name="original_pg_tid" var="original_pg_tid"  notnull="notnull"/>
+		<column name="svpg_module_srl" var="svpg_module_srl" notnull="notnull" />
+        <column name="module_srl" var="module_srl" />
+        <column name="plugin_srl" var="plugin_srl" notnull="notnull" />
+        <column name="target_module" var="target_module" />
+        <column name="order_srl" var="order_srl" notnull="notnull" />
+        <column name="order_title" var="order_title" />
+        <column name="payment_method" var="payment_method" notnull="notnull" />
+        <column name="payment_amount" var="payment_amount" notnull="notnull" />
+
+		<column name="admin_member_srl" var="admin_member_srl" notnull="notnull" default='0' />
+        <column name="admin_user_id" var="admin_user_id" notnull="notnull" default='' />
+        <column name="admin_name" var="admin_name" notnull="notnull" default='' />
+        <column name="admin_email_address" var="admin_email_address" notnull="notnull" default='' />
+
+		<column name="p_member_srl" var="p_member_srl" notnull="notnull" default='0' />
+        <column name="p_user_id" var="p_user_id" notnull="notnull" default='' />
+        <column name="p_name" var="p_name" notnull="notnull" default='' />
+        <column name="p_email_address" var="p_email_address" notnull="notnull" default='' />
+        <column name="result_code" var="result_code" notnull="notnull" />
+        <column name="result_message" var="result_message" notnull="notnull" />
+        <column name="state" var="state" notnull="notnull" />
+		<column name="cancel_reason" var="cancel_reason" />
+		<column name="extra_vars" var="extra_vars" />
+        <column name="regdate" var="regdate" default="curdate()" />
+    </columns>
+</query>

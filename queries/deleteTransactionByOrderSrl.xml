@@ -1,0 +1,8 @@
+<query id="deleteTransactionByOrderSrl" action="delete">
+	<tables>
+		<table name="svpg_transactions" />
+	</tables>
+	<conditions>
+		<condition operation="equal" column="order_srl" var="order_srl" filter="number" notnull="notnull" />
+	</conditions>
+</query>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="0.2">
+    <title xml:lang="ko">싱글뷰 PG 관리</title>
+	<title xml:lang="en">Payment module</title>
+	<title xml:lang="jp">決済モジュール</title>
+	<title xml:lang="zh-TW">電子商務系統</title>	
+    <description xml:lang="ko">이니시스, KCP, LGU+, 페이팔 등 온라인 PG를 관리하는 모듈입니다. checkCSRF()를 수정해야 합니다.</description>
+    <description xml:lang="en">This module supports online payment such as paypal.</description>
+    <description xml:lang="jp">Edy、PayPalなどのオンライン決済をサポートするモジュールです。</description>
+    <description xml:lang="zh-TW">支援第三方支付工具電子商務,如: PayPal、歐付寶...等</description>
+    <version>0.6.0</version>
+    <date>2022-02-18</date>
+    <category>service</category>
+	<author email_address="root@singleview.co.kr" link="http://singleview.co.kr">
+        <name xml:lang="ko">Singleview.co.kr</name>
+    </author>
+</module>

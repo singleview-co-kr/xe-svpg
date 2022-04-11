@@ -1,0 +1,19 @@
+<query id="insertTransaction" action="insert">
+	<tables>
+		<table name="svpg_transactions" />
+	</tables>
+	<columns>
+		<column name="svpg_module_srl" var="svpg_module_srl" notnull="notnull" />
+		<column name="module_srl" var="module_srl" />
+		<column name="plugin_srl" var="plugin_srl" notnull="notnull" />
+		<column name="order_srl" var="order_srl" notnull="notnull" />
+		<column name="payment_method" var="payment_method" notnull="notnull" />
+		<column name="payment_amount" var="payment_amount" notnull="notnull" />
+		<column name="result_code" var="result_code" />
+		<column name="result_message" var="result_message" />
+		<column name="pg_tid" var="pg_tid" />
+		<column name="state" var="state" notnull="notnull" />
+		<column name="extra_vars" var="extra_vars" />
+		<column name="regdate" var="regdate" default="curdate()" />
+	</columns>
+</query>

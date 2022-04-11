@@ -1,0 +1,86 @@
+<load target="js/script.js" />
+<script language="javascript" src="//xpay.uplus.co.kr/xpay/js/xpay_crossplatform.js" type="text/javascript"></script>
+<load target="filter/submit_xpay_smart_review.xml" />
+<load target="button.css" />
+<load target="lang" />
+
+<FORM ID='LGD_PAYINFO' NAME='fo_payment' CLASS='fo_payment' METHOD='post' ACTION='./' ONSUBMIT='launchCrossPlatform(); return false;'>
+<INPUT TYPE='hidden' NAME='svpg_module_srl' VALUE='{$svpg_module_srl}' />
+<INPUT TYPE='hidden' NAME='module_srl' VALUE='{$module_srl}' />
+<INPUT TYPE='hidden' NAME='plugin_srl' VALUE='{$plugin_srl}' />
+<INPUT TYPE='hidden' NAME='order_srl' VALUE='{$order_srl}' />
+<INPUT TYPE='hidden' NAME='svpg_order_title' VALUE='{$item_name}' />
+<!-- settings by user -->
+<INPUT TYPE='hidden' NAME='LGD_CUSTOM_USABLEPAY' ID='LGD_CUSTOM_USABLEPAY' VALUE='{$LGD_CUSTOM_USABLEPAY}' /><!-- 특정결제수단만 보이게 할 경우 사용 -->
+<INPUT TYPE='hidden' NAME='CST_PLATFORM' ID='CST_PLATFORM' VALUE='{$plugin_info->cst_platform}'>
+<INPUT TYPE='hidden' NAME='CST_WINDOW_TYPE' ID='CST_WINDOW_TYPE' VALUE='submit'>
+<INPUT TYPE='hidden' NAME='CST_MID' ID='CST_MID' VALUE='{$CST_MID}'>
+<INPUT TYPE='hidden' NAME='LGD_MID' ID='LGD_MID' VALUE='{$LGD_MID}'>
+<!--INPUT TYPE='hidden' NAME='LGD_BUYER' ID='LGD_BUYER' VALUE='{$purchaser_name}'-->
+<INPUT TYPE='hidden' NAME='LGD_PRODUCTINFO' ID='LGD_PRODUCTINFO' VALUE='{$item_name}'>
+<INPUT cond='$plugin_info->skin' TYPE='hidden' NAME='LGD_CUSTOM_SKIN' ID='LGD_CUSTOM_USABLEPAY' VALUE='{$plugin_info->skin}' />
+<INPUT type='hidden' NAME='LGD_CUSTOM_SKIN' ID='LGD_CUSTOM_SKIN' VALUE='SMART_XPAY2'>
+<INPUT cond='$plugin_info->logo_image' TYPE='hidden' NAME='LGD_CUSTOM_LOGO' VALUE="{getFullUrl('')}{$plugin_info->logo_image}" />
+	
+<input type="hidden" name="LGD_VERSION" id="LGD_VERSION" value="PHP_SmartXPay_1.0">
+<input type="hidden" name="LGD_CUSTOM_FIRSTPAY" id="LGD_CUSTOM_FIRSTPAY" value="SC0010">
+<input type="hidden" name="LGD_CUSTOM_SWITCHINGTYPE" id="LGD_CUSTOM_SWITCHINGTYPE" value="SUBMIT">
+<input type="hidden" name="LGD_CUSTOM_ROLLBACK" id="LGD_CUSTOM_ROLLBACK" value="">
+
+<!---input type="hidden" name="LGD_KVPMISPWAPURL" id="LGD_KVPMISPWAPURL" value="http://singleview.co.kr/smart/mispwapurl.php?LGD_OID=test_1234567890020">
+<input type="hidden" name="LGD_KVPMISPCANCELURL" id="LGD_KVPMISPCANCELURL" value="http://singleview.co.kr/smart/cancel_url.php">
+<input type="hidden" name="LGD_KVPMISPNOTEURL" id="LGD_KVPMISPNOTEURL" value="http://singleview.co.kr/smart/note_url.php"---->
+
+<input type="hidden" name="LGD_CASNOTEURL" id="LGD_CASNOTEURL" value="{getFullUrl('','module','svpg','act','procSvpgReport','pg','xpay_smart')}" ><!-- 무통장입금 결과처리URL -->
+<input type="hidden" name="LGD_RESPCODE" id="LGD_RESPCODE" value="">
+<input type="hidden" name="LGD_RESPMSG" id="LGD_RESPMSG" value="">
+<input type="hidden" name="LGD_PAYKEY" id="LGD_PAYKEY" value=""><!-- LG유플러스 PAYKEY(인증후 자동셋팅)-->
+<input type='hidden' name='LGD_ENCODING' id='LGD_ENCODING' value='UTF-8'>
+<input type='hidden' name='LGD_ENCODING_NOTEURL' id='LGD_ENCODING_NOTEURL' value='UTF-8'>
+<input type='hidden' name='LGD_ENCODING_RETURNURL' id='LGD_ENCODING_RETURNURL' value='UTF-8'>
+	<div id="xpayExtends"></div>
+	<div class="choice_box">
+		{@$checked=FALSE}
+		{@$first=FALSE}
+		<span cond="$plugin_info->paymethod_card=='Y'">
+			<input name="payment_method" id="xpay_pm_1" type="radio" value="{$payment_methods['credit_card']}" checked="checked"|cond="!$checked" /><label for="xpay_pm_1">{$lang->creditcard_payment}</label>
+			{@$checked=TRUE}
+			<block cond="!$first">{@$first="xpay_pm_1"}</block>
+		</span>
+		<span cond="$plugin_info->paymethod_directbank=='Y'">
+			<input name="payment_method" id="xpay_pm_2" type="radio" value="{$payment_methods['internet_banking']}" checked="checked"|cond="!$checked" /><label for="xpay_pm_2">{$lang->bank_transfer_payment}</label>
+			{@$checked=TRUE}
+			<block cond="!$first">{@$first="xpay_pm_2"}</block>
+		</span>
+		<span cond="$plugin_info->paymethod_virtualbank=='Y'">
+			<input name="payment_method" id="xpay_pm_3" type="radio" value="{$payment_methods['virtual_account']}" checked="checked"|cond="!$checked" /><label for="xpay_pm_3">{$lang->virtual_account_payment}</label>
+			{@$checked=TRUE}
+			<block cond="!$first">{@$first="xpay_pm_3"}</block>
+		</span>
+		<span cond="$plugin_info->paymethod_phone!='N'">
+			<input name="payment_method" id="xpay_pm_4" type="radio" value="{$payment_methods['mobile_phone']}" checked="checked"|cond="!$checked" /><label for="xpay_pm_4">{$lang->cellphone_payment}</label>
+			{@$checked=TRUE}
+			<block cond="!$first">{@$first="xpay_pm_4"}</block>
+		</span>
+	</div>
+	<BR>
+	<div class="btn_payment">
+		<input type="submit" value="{$lang->do_payment}" class="nuribtn orange super" />
+	</div>
+	<div id="pm_CC" class="payment_info" style="display:none"|cond="$first!='xpay_pm_1'">
+		<p class="font_size11">{$lang->about_creditcard}</p>
+	</div>
+	<div id="pm_IB" class="payment_info" style="display:none"|cond="$first!='xpay_pm_2'">
+		<p class="font_size11">{$lang->about_bank_transfer}</p>
+	</div>
+	<div id="pm_VA" class="payment_info" style="display:none"|cond="$first!='xpay_pm_3'">
+		<p class="font_size11">{$lang->about_virtual_account}</p>
+	</div>
+	<div id="pm_MP" class="payment_info" style="display:none"|cond="$first!='xpay_pm_4'">
+		<p class="font_size11">{$lang->about_cellphone}</p>
+	</div>
+</form>
+<script language=javascript>
+	var join_form = '{$join_form}';
+	var cst_platform = '{$plugin_info->cst_platform}';
+</script>

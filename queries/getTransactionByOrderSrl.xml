@@ -1,0 +1,14 @@
+<query id="getTransactionByOrderSrl" action="select">
+	<tables>
+		<table name="svpg_transactions" />
+	</tables>
+	<columns>
+		<column name="*" />
+	</columns>
+	<conditions>
+		<condition operation="equal" column="order_srl" var="order_srl" notnull="notnull" />
+		<condition operation="in" column="state" var="state" notnull="notnull" pipe="and"/>
+	</conditions>
+	<navigation>
+	</navigation>
+</query>

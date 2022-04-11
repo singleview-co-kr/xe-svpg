@@ -1,0 +1,56 @@
+<load target="css/style.css" />
+<load target="css/btn.css" />
+<load target="../../tpl/js/common.js" />
+
+<div class="payment_wrapper">
+	{$form_data}
+</div>
+<script cond="count($payment_methods)">
+	(function($) {
+		jQuery(function($) {
+			$('#svpg_form').submit(function() {
+				var mid = $('#select_method input[name=payment_method]:checked').attr('data-mid');
+				var module = $('#select_method input[name=payment_method]:checked').attr('data-module');
+				var act = $('#select_method input[name=payment_method]:checked').attr('data-act');
+				var mode = $('#select_method input[name=payment_method]:checked').attr('data-mode');
+				if (mode == 'ajax') {
+					var params = new Array();
+					var responses = ['error','message','tpl'];
+					exec_xml(module, act, params, function(ret_obj) {
+						var tpl = ret_obj.tpl.replace(/<enter>/g, '\n');
+						$('#payment_form').html(tpl);
+						inipay_submit('fo_insert_order');
+					}, responses);
+					return false;
+				} else {
+					var join_form_id = '{$join_form}';
+					var dest_form = null;
+					if(join_form_id.length)
+					{
+						copy_form('svpg_form', '{$join_form}');
+						dest_form = document.getElementById('{$join_form}');
+					}
+					else
+					{
+						dest_form = this;
+					}
+					if (mid) $('input[name=mid]', dest_form).val(mid);
+					if (module) $('input[name=module]', dest_form).val(module);
+					if (act) $('input[name=act]', dest_form).val(act);
+				}
+				if (dest_form != this)
+				{
+					var $btn = jQuery('<input type="submit" style="display:none;" />');
+					$btn.appendTo(dest_form);
+					$btn.click();
+					return false;
+				}
+			});
+			$('#svpg_form input[name=payment_method]').click(function() {
+				var id = $(this).attr('id');
+				$('#svpg_form .payment_info > div').hide();
+				$('#svpg_form .payment_info div#guide_'+id).show();
+			});
+		});
+	}) (jQuery);
+</script>

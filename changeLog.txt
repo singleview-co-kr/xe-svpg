@@ -1,0 +1,2385 @@
+v 0.0.1
+12th, Dec 2014
+1. /plugins/inipay5/tpl/formdata.html
+결제하기 버튼 색상 변경 <- 인바디 요청
+<input type="submit" value="{$lang->do_payment}" class="nuribtn orange super" /> -> <input type="submit" value="{$lang->do_payment}" class="nuribtn super" STYLE='background-color: #991a1d;'/>
+
+2. /plugins/inipaymobile/tpl/formdata.html
+결제하기 버튼 색상 변경 <- 인바디 요청
+<input type="submit" value="{$lang->do_payment}" class="nuribtn orange super" /> -> <input type="submit" value="{$lang->do_payment}" class="nuribtn super" STYLE='background-color: #991a1d;'/>
+
+3. /plugins/cash/tpl/formdata.html
+결제하기 버튼 색상 변경 <- 인바디 요청
+<input type="submit" value="{$lang->do_payment}" class="nuribtn super" /> -> <input type="submit" value="{$lang->do_payment}" class="nuribtn super" STYLE='background-color: #991a1d;'/>
+
+4. m.skins/default/paymentform.html
+모바일 플러그인에서 관리자 설정과 상관없이 가장 하단에 결제수단 결제하기 나오는 오류 해결
+
+v 0.0.2
+22nd, Dec 2014
+1. /plugins/inipay5/tpl/formdata.html
+*** 아래의 코드를 ***
+<block cond="$plugin_info->paymethod_phone=='M'">{@$HPP='2'}</block>
+*** 아래의 코드로 변경 ***
+<block cond="$plugin_info->paymethod_phone=='N'">{@$HPP='2'}</block>
+
+2. /plugins/iniescrow/tpl/formdata.html
+*** 아래의 코드를 ***
+<block cond="$plugin_info->paymethod_phone=='M'">{@$HPP='2'}</block>
+<input type="hidden" name="acceptmethod" value="SKIN({$plugin_info->skin}):HPP({$HPP}):Card(0):OCB:receipt:cardpoint" />
+*** 아래의 코드로 변경: inicis 신에스크로 서비스에 대응 ***
+<block cond="$plugin_info->paymethod_phone=='N'">{@$HPP='2'}</block>
+<input type="hidden" name="acceptmethod" value="SKIN({$plugin_info->skin}):HPP({$HPP}):Card(0):OCB:receipt:cardpoint:useescrow" />
+
+v 0.0.3
+9th, Jan 2015
+1. epay.view.php::dispEpayTransaction()
+inicismobile 무통장입금 결제 오류 수정
+*** 아래의 코드를 ***
+$post_data = array('P_TID'=>$vars->P_TID,'P_MID'=>$vars->P_MID);
+$response = $this->getRemoteResource($vars->P_REQ_URL, null, 3, 'POST', 'application/x-www-form-urlencoded',  array(), array(), $post_data);
+parse_str($response, $output);
+$P_RMESG1 = iconv('EUC-KR','UTF-8',$output['P_RMESG1']);
+
+foreach($output as $key=>$val)
+{
+	Context::set($key, $val);
+}
+
+// P_NOTI에 plugin_srl, epay_module_srl 등을 담고 있음
+parse_str($vars->P_NOTI, $output);
+foreach($output as $key=>$val)
+{
+	Context::set($key, $val);
+}
+
+*** 아래의 코드로 변경 ***
+// P_NOTI에 plugin_srl, epay_module_srl 등을 담고 있음
+parse_str($vars->P_NOTI, $output);
+foreach($output as $key=>$val)
+{
+	Context::set($key, $val);
+}
+
+$nPluginSrl = (int)Context::get( 'plugin_srl' );
+$oEpayModel = &getModel('epay');
+$plugin = $oEpayModel->getPlugin( $nPluginSrl );
+$sP_MID = $plugin->plugin_info->inicis_id;
+
+//$post_data = array('P_TID'=>$vars->P_TID,'P_MID'=>$vars->P_MID);
+$post_data = array('P_TID'=>$vars->P_TID,'P_MID'=>$sP_MID );
+
+$response = $this->getRemoteResource($vars->P_REQ_URL, null, 3, 'POST', 'application/x-www-form-urlencoded',  array(), array(), $post_data);
+parse_str($response, $output);
+$P_RMESG1 = iconv('EUC-KR','UTF-8',$output['P_RMESG1']);
+
+foreach($output as $key=>$val)
+{
+	Context::set($key, $val);
+}
+
+// P_NOTI에 plugin_srl, epay_module_srl 등을 담고 있음
+/*parse_str($vars->P_NOTI, $output);
+foreach($output as $key=>$val)
+{
+	Context::set($key, $val);
+}*/
+
+2. epay.view.php::getPaymentForm()
+inicismobile 실시간계좌이체에서 은행공동계좌이체PG 앱에서 이용 기관명 표시 오류 수정
+*** 아래의 코드를 ***
+if($_COOKIE['mobile'] == "true")
+{
+	if ($module_info->plugin_srl_mobile1)
+	{
+		$plugin = $oEpayModel->getPlugin($module_info->plugin_srl_mobile1);
+		$output = $plugin->getFormData($in_args);
+		if (!$output->toBool()) return $output;
+		$form_data .= $output->data;
+	}
+	if ($module_info->plugin_srl_mobile2)
+	{
+		$plugin = $oEpayModel->getPlugin($module_info->plugin_srl_mobile2);
+		$output = $plugin->getFormData($in_args);
+		if (!$output->toBool()) return $output;
+		$form_data .= $output->data;
+	}
+	$payment_methods = array();
+	if($module_info->m_pg1_module_srl) $payment_methods = array_merge($payment_methods, $oEpayModel->getPaymentMethods($module_info->m_pg1_module_srl));
+
+	Context::set('payment_methods', $payment_methods);
+}
+
+*** 아래의 코드로 변경 ***
+if($_COOKIE['mobile'] == "true")
+{
+	if ($module_info->plugin_srl_mobile1)
+	{
+		$plugin = $oEpayModel->getPlugin($module_info->plugin_srl_mobile1);
+		// 실시간계좌이체에서 은행공동계좌이체PG 앱에서 이용 기관명 표시
+		if( $plugin->plugin_info->plugin == 'inipaymobile' )
+		{
+			$sMerchantName = $plugin->plugin_info->extra_var->inicis_merchant_name->value;
+			if( strlen( $sMerchantName ) > 0 )
+				Context::set('merchant_name', $sMerchantName );
+			else
+				Context::set('merchant_name', '상점명' );
+		}
+		$output = $plugin->getFormData($in_args);
+		if (!$output->toBool()) return $output;
+		$form_data .= $output->data;
+	}
+	if ($module_info->plugin_srl_mobile2)
+	{
+		$plugin = $oEpayModel->getPlugin($module_info->plugin_srl_mobile2);
+		// 실시간계좌이체에서 은행공동계좌이체PG 앱에서 이용 기관명 표시
+		if( $plugin->plugin_info->plugin == 'inipaymobile' )
+		{
+			$sMerchantName = $plugin->plugin_info->extra_var->inicis_merchant_name->value;
+			if( strlen( $sMerchantName ) > 0 )
+				Context::set('merchant_name', $sMerchantName );
+			else
+				Context::set('merchant_name', '상점명' );
+		}
+		$output = $plugin->getFormData($in_args);
+		if (!$output->toBool()) return $output;
+		$form_data .= $output->data;
+	}
+	$payment_methods = array();
+	if($module_info->m_pg1_module_srl) $payment_methods = array_merge($payment_methods, $oEpayModel->getPaymentMethods($module_info->m_pg1_module_srl));
+
+	Context::set('payment_methods', $payment_methods);
+}
+
+3. /plugins/inipaymobile/info.xml
+inicismobile 실시간계좌이체에서 은행공동계좌이체PG 앱에서 이용 기관명 표시 오류 수정
+*** 아래의 코드를 ***
+<group>
+	<title xml:lang="ko">기본설정</title>
+	<var name="inicis_id" type="text">
+		<title xml:lang="ko">아이디</title>
+		<description xml:lang="ko">상점아이디를 입력해 주세요. readme.txt파일의 Merchant ID 참조.</description>
+	</var>
+</group>
+
+*** 아래의 코드로 변경 ***
+<group>
+	<title xml:lang="ko">기본설정</title>
+	<var name="inicis_id" type="text">
+		<title xml:lang="ko">아이디</title>
+		<description xml:lang="ko">상점아이디를 입력해 주세요. readme.txt파일의 Merchant ID 참조.</description>
+	</var>
+	<var name="inicis_merchant_name" type="text">
+		<title xml:lang="ko">상점명</title>
+		<description xml:lang="ko">상점명을 입력해 주세요. 은행공동계좌이체PG 앱에서 이용기관명으로 표시됩니다.</description>
+	</var>
+</group>
+
+4. /plugins/inipaymobile/tpl/formdata.html
+inicismobile 실시간계좌이체에서 은행공동계좌이체PG 앱에서 이용 기관명 표시 오류 수정
+*** 아래의 코드를 ***
+<input type="hidden" name="P_MNAME" value="상점명" />
+
+*** 아래의 코드로 변경 ***
+<input type="hidden" name="P_MNAME" value="{$merchant_name}" />
+
+v 0.0.4
+23rd, Feb 2015
+1. ./plugins/inipay5/tpl/js/script.js::inipay_submit()에서 
+비회원 구매시 구매자가 입력한 개인정보를 이니시스 모듈에 전송하기 위해 아래의 코드를 추가
+
+if( jQuery('input[name=buyername]','#fo_inipay').val() == '비회원' );
+{
+	var sBuyerName = jQuery('input[name=purchaser_name]','#fo_insert_order').val();
+	jQuery('input[name=buyername]','#fo_inipay').val( sBuyerName );
+}
+
+if( jQuery('input[name=buyeremail]','#fo_inipay').val() == '이메일을 입력해주세요"' );
+{
+	var sBuyerName = jQuery('input[name=purchaser_email]','#fo_insert_order').val();
+	jQuery('input[name=buyeremail]','#fo_inipay').val( sBuyerName );
+}
+
+29th, Mar 2015
+1. ./epay.admin.view.php::init()에서 cympusadmin 종속성 제거위해 아래의 코드 삭제
+// module이 cympusadmin일때 관리자 레이아웃으로
+if(Context::get('module')=='cympusadmin')
+{
+    $classfile = _XE_PATH_.'modules/cympusadmin/cympusadmin.class.php';
+    if(file_exists($classfile))
+    {
+	    require_once($classfile);
+	    cympusadmin::init();
+    }
+}
+
+v 0.0.5
+3rd, Aug 2015
+1. epay에서 svpg로 모듈명 변경
+
+2. ./svpg.admin.view.php::init()에서 아래의 코드를 추가
+if(Context::get('module')=='svshopmaster')
+{
+	$this->setLayoutPath('');
+	$this->setLayoutFile('common_layout');
+}
+svshopmaster 레이아웃에서 http://singletest.zc.bz/index.php?module=svshopmaster&act=dispNproductAdminItemList&module_srl=ㅌㅌㅌ 를 호출할 때
+$this->module_info->layout_srl에 정보가 있으면 모듈 디자인 설정을 실행하기 때문에 레이아웃을 강제 변경
+
+v 0.0.6
+20th, Sep 2015
+1. ./plugins/xpay_smart 추가
+2. LGU+ SmartXpay는 처리 결과를 요청페이지와 다른 return url로 반환하기 때문에 해당 페이지 호출 루틴 추가
+./module.xml 에서 dispAcceptResultPage 추가
+svpg.view.php()::dispAcceptResultPage()추가
+./plugins/xapy_smart/tpl/accept_result.html 추가, LGU+ 서버의 전달값과 Context_vars를 병합해서 plugin->processPayment()호출
+
+v 0.0.7
+20th, Sep 2015
+1. ./plugins/xpay_smart/tpl/formdata.html 에서 URF-8 인코딩 파라미터 전송 추가
+ISP 사용하는 우리 BC 국민카드의 경우 UTF-8로 결제자명 전송하면 인코딩 방식을 통지해야 함
+<input type='hidden' name='LGD_ENCODING' id='LGD_ENCODING' value='UTF-8'>
+<input type='hidden' name='LGD_ENCODING_NOTEURL' id='LGD_ENCODING_NOTEURL' value='UTF-8'>
+<input type='hidden' name='LGD_ENCODING_RETURNURL' id='LGD_ENCODING_RETURNURL' value='UTF-8'>
+
+2. ./plugins/xpay_smart/lib/conf/mall.conf와 ./plugins/xpay_smart/lib/conf/lgdacom.conf의 내용을 xpay_smart.plugin.php::getConfig()로 내재화
+./plugins/xpay_smart/lib/XPayClient.php의 생성자를 아래와 같이 변경
+getConfig()로 생성한 $config 변수 추가
+
+아래의 코드를 
+$array1 = parse_ini_file($home_dir . "/conf/mall.conf");
+$array2 = parse_ini_file($home_dir . "/conf/lgdacom.conf");
+$this->config = $array1 + $array2;
+
+아래와 같이 변경
+$this->config = $config;
+
+2. ./plugins/xpay/tpl/formdata.html 에서 URF-8 인코딩 파라미터 전송 추가
+ISP 사용하는 우리 BC 국민카드의 경우 UTF-8로 결제자명 전송하면 인코딩 방식을 통지해야 함
+<input type='hidden' name='LGD_ENCODING' id='LGD_ENCODING' value='UTF-8'>
+<input type='hidden' name='LGD_ENCODING_NOTEURL' id='LGD_ENCODING_NOTEURL' value='UTF-8'>
+<input type='hidden' name='LGD_ENCODING_RETURNURL' id='LGD_ENCODING_RETURNURL' value='UTF-8'>
+
+3. ./plugins/xpay/xpay.plugin.php::processReview()에서 
+테스트 모드일 때 "등록되지 않은 상점 아이디" 에러 메세지 오류 해결
+$LGD_MID = $this->plugin_info->mert_id; 를 아래와 같이 변경
+$CST_PLATFORM = $this->plugin_info->cst_platform; //LG유플러스 결제 서비스 선택(test:테스트, service:서비스)
+$CST_MID = $this->plugin_info->mert_id; //상점아이디(LG유플러스로 부터 발급받으신 상점아이디를 입력하세요)
+		    //테스트 아이디는 't'를 반드시 제외하고 입력하세요.
+$LGD_MID = (('test' == $CST_PLATFORM) ? 't' : '' ).$CST_MID;  //상점아이디(자동생성)
+
+
+v 0.0.8
+4th, Oct 2015
+결제화면에서 배송비 선불/착불 선택에 대응
+*.plugin.php::processReview()에 아래의 코드 추가
+if( $args->delivfee_inadvance == 'N' )
+	$args->price -= $args->delivery_fee;
+
+v 0.0.9
+11th, Oct 2015
+1. svpg.controller.php::_setParams( $sPluginName ) 추가하여 plugin이 xpay_smart일 때 $obj와 $Context 설정
+xpay_smart는 bg 통신이 아니라서, 모든 Context를 재설정해야 함
+2. ./plugins/xpay_smart/xpay_smart.plugin.php::processReview()에서
+$sReturnUrl = getNotEncodedFullUrl('').$svpg_module_info->mid. '?act=dispAcceptResultPage&plugin_srl='.$this->plugin_info->plugin_srl;을 아래와 같이 수정
+$sReturnUrl = getNotEncodedFullUrl('','module','svpg','act','procSvpgDoPayment','module_srl',$args->module_srl, 'svpg_module_srl',$args->svpg_module_srl, 'plugin_srl',$this->plugin_info->plugin_srl, 'order_srl', $args->order_srl, 'svpg_target_module', $args->target_module);
+3. ./plugins/xpay_smart/xpay_smart.plugin.php::processPayment()에서 
+$LGD_PAYKEY = Context::get('lgd_paykey'); 를 아래와 같이 변경
+$LGD_PAYKEY = Context::get('LGD_PAYKEY');
+
+4. svpg.view.php::dispAcceptResultPage() 제거
+5. ./conf/module.xml에서 <action name="dispAcceptResultPage" type="view" />제거
+6. ./plugins/xpay_smart/tpl/accept_result.html 제거
+
+v 0.1.0
+6th, Nov 2015
+1. ./plugins/xpay/xpay.plugin.php::processReview()에서 아래의 루틴 추가
+if( $this->plugin_info->paymethod_card=='Y' && $args->payment_method=='CC' )
+	$usablepay = 'SC00101';
+if( $this->plugin_info->paymethod_directbank=='Y' && $args->payment_method=='IB' )
+	$usablepay = 'SC0030';
+if( $this->plugin_info->paymethod_virtualbank=='Y' && $args->payment_method=='VA' )
+	$usablepay = 'SC0040';
+if( $this->plugin_info->paymethod_phone=='Y' && $args->payment_method=='MP' )
+	$usablepay = 'SC0060';
+Context::set('lgd_usablepay', $usablepay );
+
+2. ./plugins/xpay/tpl/formdata.html에서 아래의 hidden query 제거
+<input type="hidden" name="LGD_CUSTOM_USABLEPAY" value="{$LGD_CUSTOM_USABLEPAY}" /><!-- 특정결제수단만 보이게 할 경우 사용 -->
+
+3. ./plugins/xpay/tpl/review.html에서 아래의 hidden query 추가
+<INPUT TYPE='hidden' NAME='LGD_CUSTOM_USABLEPAY' ID='LGD_CUSTOM_USABLEPAY' VALUE='{$lgd_usablepay}' />
+
+
+v 0.1.1
+25th, Nov 2015
+1. ./svpg.controller.php::procSvpgReviewOrder() 정리
+아래의 코드 무의미해서 비활성화
+// after
+//$output = ModuleHandler::triggerCall('svpg.processReview', 'after', $args);
+//if(!$output->toBool())	return $output;
+
+v 0.1.2
+30th, Dec 2015
+xpay 무통장 입금 만료 기한 설정
+1. ./plugins/xpay/xpay.plugin.php::processReview()에 아래의 코드 추가
+$date = new DateTime('NOW');
+$date->add(new DateInterval('P3D'));
+Context::set('bank_close_date', $date->format('YmdHis') );
+
+2. ./plugins/xpay/xpay.plugin.php::processPayment()에 아래의 코드 추가
+$vars = Context::getRequestVars();
+$output->add('vact_date', $vars->lgd_closedate); // 송금일자
+
+3. ./plugins/xpay/tpl/review.html에 아래의 코드 추가
+<input type='hidden' name='LGD_CLOSEDATE' id='LGD_CLOSEDATE' value='{$bank_close_date}'>
+
+xpay_smart 무통장 입금 만료 기한 설정
+1. ./plugins/xpay_smart/xpay_smart.plugin.php::processReview()에 아래의 코드 추가
+$date = new DateTime('NOW');
+$date->add(new DateInterval('P3D'));
+Context::set('bank_close_date', $date->format('YmdHis') );
+$_SESSION['bank_close_date'] = $date->format('YmdHis');
+
+2. ./plugins/xpay_smart/tpl/review.html에 아래의 코드 추가
+<input type='hidden' name='LGD_CLOSEDATE' id='LGD_CLOSEDATE' value='{$bank_close_date}'>
+
+2. ./plugins/xpay_smart/xpay_smart.plugin.php::processPayment()에서 아래의 코드를
+$output->add('vact_date', ''); // 송금일자
+아래의 코드로 변경
+$output->add('vact_date', $_SESSION['bank_close_date']); // 송금일자
+
+v 0.1.3
+29th, Feb 2016
+xpay 결제창에서 에스크로 표시 선택 기능
+1. ./plugins/xpay/info.xml에 아래의 코드 추가
+<var name="use_escrow" type="select">
+	<title xml:lang="ko">에스크로 선택 표시</title>
+	<description xml:lang="ko">결제창에서 에스크로 선택창 표시 여부를 결정합니다.</description>
+	<options value="N">
+		<title xml:lang="ko">사용안함</title>
+	</options>
+	<options value="Y">
+		<title xml:lang="ko">사용</title>
+	</options>
+</var>
+
+2. ./plugins/xpay/xpay.plugin.php::getFormData()에 아래의 코드 추가
+if( is_null( $this->plugin_info->use_escrow ) )	$this->plugin_info->use_escrow = 'N';
+
+v 0.1.4
+3rd, Mar 2016
+결제취소 메소드 추가
+1. ./svpg.admin.model.php::getTransactionByOrderSrl() 추가
+2. ./svpg.admin.model.php::getPluginInfo() 추가
+3. ./svpg.admin.controller.php::procSvpgAdminCancelSettlement() 추가
+4. ./schemas/svpg_cancel_log.xml 추가
+5. ./queries/insertCancelLog.xml 추가
+6. ./queries/getCancelCompletedLogByTrId.xml 추가
+
+xpay plugin 결제 취소 메소드 추가
+1. ./plugins/xpay/xpay.plugin.php::processCancel() 추가
+2. /plugins/xpay/xpay.plugin.php::getConfig()에서 아래의 코드를
+$config[$this->plugin_info->mert_id] = $this->plugin_info->mert_key;
+아래의 코드로 변경
+$config[(('test' == $this->plugin_info->cst_platform) ? 't' : '' ).$this->plugin_info->mert_id] = $this->plugin_info->mert_key;
+
+v 0.1.5
+9th, Mar 2016
+xpay smart 결제취소 메소드 추가
+1. /plugins/xpay_smart/xpay_smart.plugin.php::processCancel() 추가
+
+v 0.1.6
+11th, Mar 2016
+통신성공 결제취소 실패를 관리자에게 알려주도록 변경
+1. ./svpg.admin.controller.php::procSvpgAdminCancelSettlement() 에 아래의 코드 추가
+$sPluginRstMsg = sprintf( "%s", $pc_ret->get('result_message') );
+$Rst = new Object(-1, $sPluginRstMsg );
+$Rst->add('regdate', $args->regdate);
+return $Rst;
+
+v 0.1.7
+26th, Mar 2016
+외부서버에 무통장입금 이벤트 발생 시 주문 정보 전송
+1. ./svpg.controller.php::procSvpgReport() 에 아래의 코드 추가
+$oSvorderController = &getController('svorder');
+$oSvorderController->transmitOrderInfo( $report->order_srl );
+
+v 0.1.8
+30th, Mar 2016
+1. ./svpg.controller.php::procSvpgReport() 에서 아래의 코드를
+$oSvorderController->transmitOrderInfo( $report->order_srl );
+아래와 같이 변경
+$oSvorderController->transmitOrderInfoExt( $report->order_srl );
+
+v 0.1.9
+5th, Feb 2017
+1. checkCSRF() patch 관련 안내 추가
+
+v 0.2.0
+8th, Mar 2017
+1.  LGUPLUS escrow 결제 처리 기능 추가
+./plugins/xpay/xpay.plugin.php::processPayment()에 아래의 코드 추가
+$output->add('vact_use_escrow', $xpay->Response('LGD_ESCROWYN',0)); //에스크로 사용여부
+
+./plugins/xpay_smart/xpay_smart.plugin.php::processPayment()에 아래의 코드 추가
+$output->add('vact_use_escrow', $xpay->Response('LGD_ESCROWYN',0)); //에스크로 사용여부
+
+./svpg.controller.php::procSvpgDoPayment()에 아래의 코드 추가
+$args->use_escrow = $pp_ret->get('vact_use_escrow');
+
+v 0.2.1
+12th, Mar 2017
+1.  각 플러그인 로그 경로 통일
+
+v 0.2.2
+15th, Mar 2017
+1. PG 플러그인 SRL 정보가 잘못되면 오류 메세지 출력
+2. $GLOBALS['svpg_plugins'][$plugin_srl] 변수 비활성화
+
+./svpg.model.php::getPlugin()에서 아래의 코드를
+$plugin_info = $this->getPluginInfo($plugin_srl);
+require_once(sprintf("%ssvpg.plugin.php",$this->module_path));
+require_once(sprintf("%splugins/%s/%s.plugin.php",$this->module_path, $plugin_info->plugin, $plugin_info->plugin));
+$tmpFn = create_function('', "return new {$plugin_info->plugin}();");
+$pluginObj = $tmpFn();
+$pluginObj->init($plugin_info);
+$GLOBALS['svpg_plugins'][$plugin_srl] = $pluginObj;
+return $GLOBALS['svpg_plugins'][$plugin_srl];
+
+아래와 같이 변경
+$plugin_info = $this->getPluginInfo($plugin_srl);
+if( is_null( $plugin_info ) )
+	return null;
+require_once(sprintf("%ssvpg.plugin.php",$this->module_path));
+require_once(sprintf("%splugins/%s/%s.plugin.php",$this->module_path, $plugin_info->plugin, $plugin_info->plugin));
+$tmpFn = create_function('', "return new {$plugin_info->plugin}();");
+$pluginObj = $tmpFn();
+$pluginObj->init($plugin_info);
+return $pluginObj;
+
+./svpg.view.php::getPaymentForm()에서 아래의 코드를
+if ($module_info->plugin_srl)
+{
+	$plugin = $oSvpgModel->getPlugin($module_info->plugin_srl);
+	$output = $plugin->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data = $output->data;
+}
+
+if ($module_info->plugin2_srl)
+{
+	$plugin2 = $oSvpgModel->getPlugin($module_info->plugin2_srl);
+	$output = $plugin2->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data .= $output->data;
+}
+
+if ($module_info->plugin3_srl)
+{
+	$plugin3 = $oSvpgModel->getPlugin($module_info->plugin3_srl);
+	$output = $plugin3->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data .= $output->data;
+}
+
+if ($module_info->plugin4_srl)
+{
+	$plugin4 = $oSvpgModel->getPlugin($module_info->plugin4_srl);
+	$output = $plugin4->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data .= $output->data;
+}
+
+if ($module_info->plugin5_srl)
+{
+	$plugin5 = $oSvpgModel->getPlugin($module_info->plugin5_srl);
+	$output = $plugin5->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data .= $output->data;
+}
+
+아래와 같이 변경
+if ($module_info->plugin_srl)
+{
+	$plugin = $oSvpgModel->getPlugin($module_info->plugin_srl);
+	if( is_null( $plugin ) )
+		return new Object(-1, 'msg_invaild_plugin_srl');
+	$output = $plugin->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data = $output->data;
+}
+
+if ($module_info->plugin2_srl)
+{
+	$plugin2 = $oSvpgModel->getPlugin($module_info->plugin2_srl);
+	if( is_null( $plugin2 ) )
+		return new Object(-1, 'msg_invaild_plugin_srl');
+	$output = $plugin2->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data .= $output->data;
+}
+
+if ($module_info->plugin3_srl)
+{
+	$plugin3 = $oSvpgModel->getPlugin($module_info->plugin3_srl);
+	if( is_null( $plugin3 ) )
+		return new Object(-1, 'msg_invaild_plugin_srl');
+	$output = $plugin3->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data .= $output->data;
+}
+
+if ($module_info->plugin4_srl)
+{
+	$plugin4 = $oSvpgModel->getPlugin($module_info->plugin4_srl);
+	if( is_null( $plugin4 ) )
+		return new Object(-1, 'msg_invaild_plugin_srl');
+	$output = $plugin4->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data .= $output->data;
+}
+
+if ($module_info->plugin5_srl)
+{
+	$plugin5 = $oSvpgModel->getPlugin($module_info->plugin5_srl);
+	if( is_null( $plugin5 ) )
+		return new Object(-1, 'msg_invaild_plugin_srl');
+	$output = $plugin5->getFormData($in_args);
+	if (!$output->toBool()) return $output;
+	$form_data .= $output->data;
+}
+
+v 0.2.3
+24th, Mar 2017
+1. 무통장입금 완료 이벤트 처리루틴의 보안 검사 예외 처리
+./conf/module.xml에서 아래의 코드를
+<action name="procSvpgReport" type="controller" />
+아래와 같이 변경
+<action name="procSvpgReport" type="controller" method="GET|POST" />
+
+2. 불필요한 메소드 제거
+./svpg.view.php::makeOrderKey() 비활성화
+
+./svpg.class.php::checkUpdate()에서 아래의 코드 제거
+$oModuleModel = &getModel('module');
+$oDB = &DB::getInstance();
+
+// 2012.02.07 add target_module
+if(!$oDB->isColumnExists("svpg_transactions","target_module")) return true;
+
+// 2012-04-06 regdate index added.
+if (!$oDB->isIndexExists('svpg_transactions', 'idx_regdate')) return true;
+
+// 2012-04-24 order_title column added.
+if (!$oDB->isColumnExists('svpg_transactions','order_title')) return true;
+
+// 2013-07-28 regdate index added.
+if (!$oDB->isIndexExists('svpg_transactions', 'idx_member_srl')) return true;
+
+./svpg.class.php::moduleUpdate() 비활성화
+
+./svpg.class.php::moduleInstall()에서 아래의 코드 비활성화
+//$oModuleController = &getController('module');    
+//return new Object();
+
+3. 무통장입금 완료 보고 이벤트 처리루틴 구조 개선
+./svpg.controller.php::procSvpgReport()에서 아래의 코드를
+$pr_ret = $plugin->processReport($transaction);
+$transaction->state = $pr_ret->state;
+
+$output = executeQuery('svpg.updateTransaction',$transaction);
+if (!$output->toBool())
+	return $output;
+
+$output = ModuleHandler::triggerCall('svpg.processPayment', 'after', $transaction);
+if(!$output->toBool())
+	return $output;
+exit(0);
+
+아래와 같이 변경
+if( $pr_ret->toBool() ) 
+{
+	switch( $sPgRstCode )
+	{
+		case 'SVPG_VAC': // virutal_account_confirmed
+			$sRespCode = 'OK';
+			break;
+		case 'SVPG_RC': // receive_confirmed
+			$sRespCode = $this->_updateTransaction($transaction, 2);
+			break;
+		case 'SVPG_CC': // cancel_confirmed
+			$sRespCode = $this->_updateTransaction($transaction, 1);
+			break;
+	}
+}
+else
+{
+	switch( $sPgRstCode )
+	{
+		case 'SVPG_AME': // amount_mismatch_error
+		case 'SVPG_UE': // unknown error
+		default:
+			$sRespCode = 'ERR';
+			break;
+	}
+}
+Context::setResponseMethod('JSON');
+echo $sRespCode;
+
+./queries/getTransactionByOrderState.xml 추가
+./svpg.controller.php::_updateTransaction() 추가
+
+./plugins/xpay_smart/xpay.plugin.php::processReport에서 아래의 코드를 
+if ($transaction->pg_tid != $tid)
+{
+	echo "TID mismatch";
+	$output->setError(-1);
+	$output->setMessage('TID mismatch');
+	$output->state = '1'; // not completed
+	return $output;
+}
+/// LGD_CASFLAG가 'I' 이면 '입금'
+if ($casflag != 'I')
+{
+	echo "CASFLAG mismatch : " . $casflag;
+	$output->setError(-1);
+	$output->setMessage('CASFLAG mismatch');
+	$output->state = '1'; // not completed
+	return $output;
+}
+$output->order_srl = Context::get('LGD_OID');
+$output->amount = Context::get('LGD_CASTAMOUNT');
+if ($output->amount == $transaction->payment_amount)
+{
+	echo "OK";
+	$output->setError(0);
+	$output->state = '2'; // successfully completed
+}
+else
+{
+	echo "Amount mismatch";
+	$output->setError(-1);
+	$output->setMessage('amount mismatch');
+	$output->state = '1'; // not completed
+}
+
+아래와 같이 변경
+if ($transaction->pg_tid != $tid)
+{
+	$output->setError(-1); // not completed
+	$output->setMessage('LGD_TID mismatch');
+	return $output;
+}
+
+if( $casflag == 'R' ) // LGD_CASFLAG R:가상계좌 할당
+{
+	$output->setError(0); // successfully completed
+	$output->setMessage('SVPG_VAC'); // virutal_account_confirmed
+}
+else if( $casflag == 'I' ) // LGD_CASFLAG I: 입금
+{
+	$output->order_srl = Context::get('LGD_OID');
+	$output->amount = Context::get('LGD_CASTAMOUNT');
+	if ($output->amount == $transaction->payment_amount)
+	{
+		$output->setError(0); // successfully completed
+		$output->setMessage('SVPG_RC'); // receive_confirmed
+	}
+	else
+	{
+		$output->setError(-1); // not completed
+		$output->setMessage('SVPG_AME'); // amount_mismatch_error
+	}
+}
+else if( $casflag == 'C' ) // LGD_CASFLAG C:은행에서 입금취소
+{
+	$output->setError(0); // successfully completed
+	$output->setMessage('SVPG_CC'); // cancel_confirmed
+}
+else // LGD_CASFLAG 오류
+{
+	$output->setError(-1); // not completed
+	$output->setMessage('SVPG_UE'); // unknown error
+}
+
+./plugins/xpay_smart/xpay_smart.plugin.php::processReport에서 아래의 코드를 
+if ($transaction->pg_tid != $tid)
+{
+	echo "TID mismatch";
+	$output->setError(-1);
+	$output->setMessage('TID mismatch');
+	$output->state = '1'; // not completed
+	return $output;
+}
+/// LGD_CASFLAG가 'I' 이면 '입금'
+if ($casflag != 'I')
+{
+	echo "CASFLAG mismatch : " . $casflag;
+	$output->setError(-1);
+	$output->setMessage('CASFLAG mismatch');
+	$output->state = '1'; // not completed
+	return $output;
+}
+$output->order_srl = Context::get('LGD_OID');
+$output->amount = Context::get('LGD_CASTAMOUNT');
+if ($output->amount == $transaction->payment_amount)
+{
+	echo "OK";
+	$output->setError(0);
+	$output->state = '2'; // successfully completed
+}
+else
+{
+	echo "Amount mismatch";
+	$output->setError(-1);
+	$output->setMessage('amount mismatch');
+	$output->state = '1'; // not completed
+}
+
+아래와 같이 변경
+if ($transaction->pg_tid != $tid)
+{
+	$output->setError(-1); // not completed
+	$output->setMessage('LGD_TID mismatch');
+	return $output;
+}
+
+if( $casflag == 'R' ) // LGD_CASFLAG R:가상계좌 할당
+{
+	$output->setError(0); // successfully completed
+	$output->setMessage('SVPG_VAC'); // virutal_account_confirmed
+}
+else if( $casflag == 'I' ) // LGD_CASFLAG I: 입금
+{
+	$output->order_srl = Context::get('LGD_OID');
+	$output->amount = Context::get('LGD_CASTAMOUNT');
+	if ($output->amount == $transaction->payment_amount)
+	{
+		$output->setError(0); // successfully completed
+		$output->setMessage('SVPG_RC'); // receive_confirmed
+	}
+	else
+	{
+		$output->setError(-1); // not completed
+		$output->setMessage('SVPG_AME'); // amount_mismatch_error
+	}
+}
+else if( $casflag == 'C' ) // LGD_CASFLAG C:은행에서 입금취소
+{
+	$output->setError(0); // successfully completed
+	$output->setMessage('SVPG_CC'); // cancel_confirmed
+}
+else // LGD_CASFLAG 오류
+{
+	$output->setError(-1); // not completed
+	$output->setMessage('SVPG_UE'); // unknown error
+}
+
+./plugins/iniescrow/iniescrow.plugin.php::processReport에서 아래의 코드를 
+if ($output->amount == $transaction->payment_amount)
+{
+	echo "OK";
+	$output->setError(0);
+	$output->state = '2'; // successfully completed
+}
+else
+{
+	$output->setError(-1);
+	$output->setMessage('amount not match');
+	$output->state = '1'; // not completed
+}
+
+아래와 같이 변경
+if ($output->amount == $transaction->payment_amount)
+{
+	$output->setError(0); // successfully completed
+	$output->setMessage('SVPG_RC'); // receive_confirmed
+}
+else
+{
+	$output->setError(-1); // not completed
+	$output->setMessage('SVPG_AME'); // amount_mismatch_error
+}
+
+./plugins/inipay5/inipay5.plugin.php::processReport에서 아래의 코드를 
+if ($output->amount == $transaction->payment_amount)
+{
+	echo "OK";
+	$output->setError(0);
+	$output->state = '2'; // successfully completed
+}
+else
+{
+	$output->setError(-1);
+	$output->setMessage('amount not match');
+	$output->state = '1'; // not completed
+}
+
+아래와 같이 변경
+if ($output->amount == $transaction->payment_amount)
+{
+	$output->setError(0); // successfully completed
+	$output->setMessage('SVPG_RC'); // receive_confirmed
+}
+else
+{
+	$output->setError(-1); // not completed
+	$output->setMessage('SVPG_AME'); // amount_mismatch_error
+}
+
+./plugins/inipaymobile/inipaymobile.plugin.php::processReport에서 아래의 코드를 
+if ($output->amount == $transaction->payment_amount)
+{
+	echo "OK";
+	$output->setError(0);
+	$output->state = '2'; // successfully completed
+}
+else
+{
+	$output->setError(-1);
+	$output->setMessage('amount not match');
+	$output->state = '1'; // not completed
+}
+
+아래와 같이 변경
+if ($output->amount == $transaction->payment_amount)
+{
+	$output->setError(0); // successfully completed
+	$output->setMessage('SVPG_RC'); // receive_confirmed
+}
+else
+{
+	$output->setError(-1); // not completed
+	$output->setMessage('SVPG_AME'); // amount_mismatch_error
+}
+
+v 0.2.4
+13th, Apr 2017
+1. 불필요한 코드 비활성화
+./svpg.controller.php::procSvpgDoPayment()에서 아래의 코드 비활성화
+$oModuleModel = &getModel('module');
+
+v 0.2.5
+13th, May 2017
+1. smart_xpay plugin에서 PG 화면 완료 후 &mid= 가 적절히 입력되지 않아서 PG 플러그인 에러나고 모바일 결제 완료 화면이 표시되지 않음
+./svpg.controller.php::procSvpgDoPayment()에서 아래의 코드를 
+$mid = $_SESSION['xe_mid'];
+아래와 같이 변경
+$oModuleModel = &getModel('module');
+$oModuleInfo = $oModuleModel->getModuleInfoByModuleSrl($nSvcartModuleSrl);
+$mid = $oModuleInfo->mid;
+
+./plugins/xpay_smart/xpay_smart.plugin.php::processPayment()에서 아래의 코드를 
+$CST_PLATFORM               = Context::get('cst_platform');
+$CST_MID                    = Context::get('cst_mid');
+아래와 같이 변경
+$CST_PLATFORM = $this->plugin_info->cst_platform; //LG유플러스 결제 서비스 선택(test:테스트, service:서비스)
+$CST_MID = $this->plugin_info->mert_id; //상점아이디(LG유플러스로 부터 발급받으신 상점아이디를 입력하세요)
+
+v 0.2.6
+20th, May 2017
+1. 현금결제 화면 표시 지연 제거
+./plugin/cash/tpl/js/script.js::completeCashReviewOrder()에서 아래의 코드를
+setTimeout("obj.submit();", 1000);
+아래와 같이 변경
+obj.submit();
+
+2. trigger 제거
+./svpg.controller.php::procSvpgReviewOrder()에서 아래의 코드를 
+$output = ModuleHandler::triggerCall('svpg.processReview', 'before', $args);
+아래와 같이 변경
+$oSvcartController = &getController('svcart');
+$output = $oSvcartController->updateCartStatusByReviewOrder($args);
+
+./svpg.controller.php::procSvpgDoPayment()에서 아래의 코드를 
+$output = ModuleHandler::triggerCall('svpg.processPayment', 'after', $args);
+아래와 같이 변경
+$oSvcartController = &getController('svcart');
+$output = $oSvcartController->confirmCart($args);
+
+./svpg.controller.php::procSvpgReviewOrder()에 아래의 코드를 추가
+$oSvorderController = &getController('svorder');
+$output = $oSvorderController->precheckOrder($args);
+if (!$output->toBool())
+	return $output;
+
+./svpg.controller.php::_updateTransaction()에서 아래의 코드를 
+$output = ModuleHandler::triggerCall('svpg.processPayment', 'after', $oTr);
+if(!$output->toBool())
+	return 'failure:processPayment trigger';
+아래와 같이 변경
+$oSvorderController = &getController('svorder');
+$output = $oSvorderController->completePgProcess($args);
+if(!$output->toBool())
+	return $output;
+
+./svpg.admin.view.php::dispSvpgAdminTransactions()에서 아래의 코드를 
+ModuleHandler::triggerCall('svpg.getTransactionList', 'after', $list);
+아래와 같이 변경
+foreach($list as $key=>$val)
+{
+	if($val->target_module == 'svcart')
+		$list[$key]->target_act = 'getSvcartAdminOrderDetails';
+}
+
+./svpg.admin.view.php::dispSvpgAdminInsertSvpg()에서 아래의 코드 제거
+$pg_modules = array();
+$output = ModuleHandler::triggerCall('svpg.getPgModules', 'before', $pg_modules);
+if(!$output->toBool()) 
+	return $output;
+Context::set('pg_modules', $pg_modules);
+
+3. 미사용 메소드 제거
+./svpg.controller.php::reviewOrder() 제거
+./svpg.controller.php::beforePayment() 제거
+./svpg.controller.php::afterPayment() 제거
+./svpg.controller.php::sendTaxinvoice() 제거
+./svpg.model.php::getPgModules() 제거
+./tpl/insertsvpg.html에서 연동 모듈 표시 코드 블록 제거
+
+v 0.2.7
+23rd, May 2017
+1. 외부 물류 서버에 거래 통지 기능 일원화
+./svpg.controller.php::procSvpgReport()에서 아래의 코드를 제거하고 ./svorder.controller.php::completePgProcess()로 이동함
+$oSvorderController = &getController('svorder');
+$oSvorderController->transmitOrderInfoExt( $report->order_srl );
+
+v 0.2.8
+6th, Jun 2017
+1. PG사 결제 영수증 발행 방식 개선
+./plugins/xpay.plugin.php::getReceipt() 추가
+
+./svpg.plugin.php::getReceipt()에서 아래의 코드를
+function getReceipt($pg_tid, $paymethod = NULL) { return '발행불가'; }
+아래와 같이 변경
+function getReceipt($pg_tid, $paymethod = NULL) { return Context::getLang('no_data'); }
+
+./svpg.plugin.php::getReceipt()에 아래의 코드 추가
+if( !$oPlugin )
+{
+	$this->add('tpl', Context::getLang('msg_invaild_plugin_srl'));
+	return;
+}
+
+2. 미사용 코드 제거
+./svpg.model.php::getSvpgReceipt()에서 아래의 코드 제거
+$tpl = '영수증 발행불가';
+
+v 0.2.9
+17th, Jun 2017
+1. svpg 페이지 생성 코드 오류 수정
+./svpg.admin.view.php::dispSvpgAdminInsertSvpg()에서 아래의 코드를 
+if($module_srl)
+{
+	$oModuleModel = &getModel('module');
+	$module_info = $oModuleModel->getModuleInfoByModuleSrl($module_srl);
+	if(!$module_info)
+		return new Object(-1, 'msg_invalid_request');
+	else
+	{
+		ModuleModel::syncModuleToSite($module_info);
+		Context::set('module_info',$module_info);
+	}
+}
+아래와 같이 변경
+$oModuleModel = &getModel('module');
+if($module_srl)
+{
+	$module_info = $oModuleModel->getModuleInfoByModuleSrl($module_srl);
+	if(!$module_info)
+		return new Object(-1, 'msg_invalid_request');
+	else
+	{
+		ModuleModel::syncModuleToSite($module_info);
+		Context::set('module_info',$module_info);
+	}
+}
+
+v 0.3.0
+15th, Jul 2017
+1. 일반 사용자도 PG 결제 취소 허용
+$logged_info = Context::get('logged_info');
+if( $logged_info->is_admin != 'Y' && $logged_info->group_list[1] != '관리그룹' )
+	return new Object( -1, 'msg_no_proper_permission' );
+
+v 0.3.1
+1st, Apr 2018
+1. PG 계정 교체나 유지보수 예정을 위한 사용 금지 일정 기능 추가
+./tpl/insertsvpg.html에 아래의 코드 추가
+<div class="x_control-group">
+	<label class="x_control-label">{$lang->forbid_settlement_after}</label>
+	<div class="x_controls">
+		<input type="text" name="forbid_settlement_after" value="{$module_info->forbid_settlement_after}" class="inputTypeText w200" />
+		<a href="#forbid_settlement_after_help" class="x_icon-question-sign" data-toggle>{$lang->help}</a>
+		<p id="forbid_settlement_after_help" class="x_help-block" hidden>{$lang->about_forbid_settlement_after}</p>
+	</div>
+</div>
+
+./svpg.view.php::getPaymentForm()에 아래의 코드 추가
+$fCurDatetime = (float)date('YmdHis');
+$fForbidDatetime = (float)$module_info->forbid_settlement_after;
+if( $fForbidDatetime && $fCurDatetime > $fForbidDatetime )
+{
+	$date = DateTime::createFromFormat('YmdHis', $module_info->forbid_settlement_after);
+	$date->modify('+1 day');
+	echo $date->format('Y-m-d');
+	$output = new Object();
+	$output->data = '결제 기능을 점검 중입니다.<BR>'.$date->format('Y-m-d').'부터 재개될 예정입니다.';
+	return $output;
+}
+
+v 0.3.2
+5th, Apr 2018
+1. PG plugin 호출 코드 최적화
+./svpg.view.php::getPaymentForm()에서 아래의 코드 제거
+$payment_methods = array();
+if($module_info->pg1_module_srl) $payment_methods = array_merge($payment_methods, $oSvpgModel->getPaymentMethods($module_info->pg1_module_srl));
+if($module_info->pg2_module_srl) $payment_methods = array_merge($payment_methods, $oSvpgModel->getPaymentMethods($module_info->pg2_module_srl));
+if($module_info->pg3_module_srl) $payment_methods = array_merge($payment_methods, $oSvpgModel->getPaymentMethods($module_info->pg3_module_srl));
+if($module_info->pg4_module_srl) $payment_methods = array_merge($payment_methods, $oSvpgModel->getPaymentMethods($module_info->pg4_module_srl));
+Context::set('payment_methods', $payment_methods);
+
+$payment_methods = array();
+if($module_info->m_pg1_module_srl) $payment_methods = array_merge($payment_methods, $oSvpgModel->getPaymentMethods($module_info->m_pg1_module_srl));
+Context::set('payment_methods', $payment_methods);
+
+./skins/default/paymentform.html에서 아래의 코드 제거
+<div cond="count($payment_methods)" class="payment_wrapper">
+	<div class="payment_title">결제수단</div>
+	<form id="svpg_form" method="post" action="./">
+		<input type="hidden" name="act" value="" />
+		<input type="hidden" name="mid" value="{$mid}" />
+		<input type="hidden" name="module" value="{$module}" />
+		<!-- <input type="hidden" name="cartnos" value="{$cartnos}" /> -->
+		<input type="hidden" name="svpg_module_srl" value="{$svpg_module_srl}" />
+		<input type="hidden" name="module_srl" value="{$module_info->module_srl}" />
+		<input type="hidden" name="item_name" value="{$item_name}" />
+		<input type="hidden" name="price" value="{$price}" />
+		<input type="hidden" name="purchaser_name" value="{$purchaser_name}" />
+		<input type="hidden" name="purchaser_email" value="{$purchaser_email}" />
+		<input type="hidden" name="purchaser_telnum" value="{$purchaser_telnum}" />
+		<input type="hidden" name="target_module" value="{$target_module}" />
+
+		<!-- <input type="hidden" name="order_srl" value="{$order_srl}" /> -->
+		<!-- <input type="hidden" name="transaction_srl" value="{$transaction_srl}" /> -->
+		<ul id="select_method">
+			{@$count=0}
+			<li loop="$payment_methods=>$key,$val">
+				<label for="{$key}"><input type="radio" name="payment_method" id="{$key}" data-mid="{$val->mid}" data-module="{$val->module}" data-act="{$val->act}" data-mode="{$val->mode}" value="{$val->payment_method}" checked="checked"|cond="$count==0" />{$val->title}</label>
+				{@$count++}
+			</li>
+		</ul>
+		{@$count=0}
+		<div class="payment_info">
+			<div loop="$payment_methods=>$key,$val" id="guide_{$key}" class="guide" style="display:none;"|cond="$count>0">
+				{$val->guide}
+				{@$count++}
+			</div>
+		</div>
+		<div class="btn_wrap">
+			<button type="submit" class="btn nbtn"><block cond="$svpg_module_info->button_text">{$svpg_module_info->button_text}</block><block cond="!$svpg_module_info->button_text">구매하기</block></button>
+		</div>
+	</form>
+</div>
+
+v 0.3.3
+26th, Apr 2018
+1. LGU+ XPAY SSL 대응
+./plungins/xpay/tpl/formdata.html에서 아래의 코드를
+<load target="http:://xpay.lgdacom.net/xpay/js/xpay_ub_utf-8.js" type="body" />
+아래와 같이 변경
+<load target="//xpay.lgdacom.net/xpay/js/xpay_ub_utf-8.js" type="body" />
+
+./plungins/xpay/tpl/receipt.html에서 아래의 코드를
+<script src="http://pgweb.uplus.co.kr/WEB_SERVER/js/receipt_link.js"></script>
+아래와 같이 변경
+<script src="//pgweb.uplus.co.kr/WEB_SERVER/js/receipt_link.js"></script>
+
+./plungins/xpay_smart/tpl/formdata.html에서 아래의 코드를
+<script language="javascript" src="http://xpay.uplus.co.kr/xpay/js/xpay_crossplatform.js" type="text/javascript"></script>
+아래와 같이 변경
+<script language="javascript" src="//xpay.uplus.co.kr/xpay/js/xpay_crossplatform.js" type="text/javascript"></script>
+
+./plungins/xpay_smart/tpl/receipt.html에서 아래의 코드를
+<script src="http://pgweb.uplus.co.kr/WEB_SERVER/js/receipt_link.js"></script>
+아래와 같이 변경
+<script src="//pgweb.uplus.co.kr/WEB_SERVER/js/receipt_link.js"></script>
+
+v 0.3.4
+29th, Apr 2018
+1. svorder v0.8.14에 대응
+./svpg.controller.php::procSvpgReviewOrder()에서 아래의 코드 제거
+$nOrderSrl = getNextSequence(); 
+$args->order_srl = $nOrderSrl; 
+
+./svpg.controller.php::procSvpgReviewOrder()에 아래의 코드 추가
+$nOrderSrl = $output->get('order_srl');
+$args->order_srl = $nOrderSrl; 
+
+2. svpg_transactions::transaction_srl 을 getNextSequence()에서 auto_increment로 변경
+./schemas/svpg_transactions.xml에서 아래의 코드를
+<column name="transaction_srl" type="number" size="11" notnull="notnull" primary_key="primary_key" />
+아래와 같이 변경
+<column name="transaction_srl" type="number" size="11" notnull="notnull" primary_key="primary_key" auto_increment="auto_increment"/>
+
+./svpg.controller.php::procSvpgDoPayment()에서 아래의 코드 제거
+$args->transaction_srl = getNextSequence();
+
+./queries/insertTransaction.xml에서 아래의 코드 제거
+<column name="transaction_srl" var="transaction_srl" filter="number" notnull="notnull" />
+
+3. svpg_cancel_log::transaction_srl 을 getNextSequence()에서 auto_increment로 변경
+./schemas/svpg_cancel_log.xml에서 아래의 코드를
+<column name="transaction_srl" type="number" size="11" notnull="notnull" primary_key="primary_key" />
+아래와 같이 변경
+<column name="transaction_srl" type="number" size="11" notnull="notnull" primary_key="primary_key" auto_increment="auto_increment"/>
+
+./svpg.admin.controller.php::procSvpgAdminCancelSettlement()에서 아래의 코드 제거
+$args->transaction_srl=getNextSequence();
+
+./queries/insertCancelLog.xml에서 아래의 코드 제거
+<column name="transaction_srl" var="transaction_srl" filter="number" notnull="notnull" />
+
+v 0.3.5
+6th, Jun 2018
+1. xpay 결제방식 기본선택을 사용안함으로 변경
+./plugins/xapy/info.xml에서 아래의 코드를
+<title xml:lang="ko">기본설정</title>
+<var name="cst_platform" type="select">
+	<title xml:lang="ko">서비스 모드</title>
+	<description xml:lang="ko">테스트 혹은 실서비스를 선택하세요.</description>
+	<options value="service">
+		<title xml:lang="ko">서비스</title>
+	</options>
+	<options value="test">
+		<title xml:lang="ko">테스트</title>
+	</options>
+</var>
+아래와 같이 변경
+<title xml:lang="ko">기본설정</title>
+<var name="cst_platform" type="select">
+	<title xml:lang="ko">서비스 모드</title>
+	<description xml:lang="ko">테스트 혹은 실서비스를 선택하세요.</description>
+	<options value="test">
+		<title xml:lang="ko">테스트</title>
+	</options>
+	<options value="service">
+		<title xml:lang="ko">서비스</title>
+	</options>
+</var>
+
+./plugins/xapy/info.xml에서 아래의 코드를
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_phone" type="select">
+		<title xml:lang="ko">휴대폰소액</title>
+		<description xml:lang="ko">휴대폰소액결제 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+</group>
+아래와 같이 변경
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_phone" type="select">
+		<title xml:lang="ko">휴대폰소액</title>
+		<description xml:lang="ko">휴대폰소액결제 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+</group>
+
+./plugins/xapy_smart/info.xml에서 아래의 코드를
+<title xml:lang="ko">기본설정</title>
+<var name="cst_platform" type="select">
+	<title xml:lang="ko">서비스 모드</title>
+	<description xml:lang="ko">테스트 혹은 실서비스를 선택하세요.</description>
+	<options value="service">
+		<title xml:lang="ko">서비스</title>
+	</options>
+	<options value="test">
+		<title xml:lang="ko">테스트</title>
+	</options>
+</var>
+아래와 같이 변경
+<title xml:lang="ko">기본설정</title>
+<var name="cst_platform" type="select">
+	<title xml:lang="ko">서비스 모드</title>
+	<description xml:lang="ko">테스트 혹은 실서비스를 선택하세요.</description>
+	<options value="test">
+		<title xml:lang="ko">테스트</title>
+	</options>
+	<options value="service">
+		<title xml:lang="ko">서비스</title>
+	</options>
+</var>
+
+./plugins/xapy/info.xml에서 아래의 코드를
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_phone" type="select">
+		<title xml:lang="ko">휴대폰소액</title>
+		<description xml:lang="ko">휴대폰소액결제 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+</group>
+아래와 같이 변경
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_phone" type="select">
+		<title xml:lang="ko">휴대폰소액</title>
+		<description xml:lang="ko">휴대폰소액결제 사용여부를 선택하세요. LGU+와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+</group>
+
+./plugins/iniescrow/info.xml에서 아래의 코드를
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_phone" type="select">
+		<title xml:lang="ko">휴대폰소액</title>
+		<description xml:lang="ko">휴대폰소액결제 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용(컨텐츠)</title>
+		</options>
+		<options value="M">
+			<title xml:lang="ko">사용(실물)</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+</group>
+
+아래와 같이 변경
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_phone" type="select">
+		<title xml:lang="ko">휴대폰소액</title>
+		<description xml:lang="ko">휴대폰소액결제 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용(컨텐츠)</title>
+		</options>
+		<options value="M">
+			<title xml:lang="ko">사용(실물)</title>
+		</options>
+	</var>
+</group>
+
+./plugins/inipay5/info.xml에서 아래의 코드를
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_phone" type="select">
+		<title xml:lang="ko">휴대폰소액</title>
+		<description xml:lang="ko">휴대폰소액결제 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용(컨텐츠)</title>
+		</options>
+		<options value="M">
+			<title xml:lang="ko">사용(실물)</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+</group>
+
+아래와 같이 변경
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_phone" type="select">
+		<title xml:lang="ko">휴대폰소액</title>
+		<description xml:lang="ko">휴대폰소액결제 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용(컨텐츠)</title>
+		</options>
+		<options value="M">
+			<title xml:lang="ko">사용(실물)</title>
+		</options>
+	</var>
+</group>
+
+./plugins/inipaymobile/info.xml에서 아래의 코드를
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+	</var>
+</group>
+
+아래와 같이 변경
+<group>
+	<title xml:lang="ko">결제방식</title>
+	<var name="paymethod_card" type="select">
+		<title xml:lang="ko">신용카드</title>
+		<description xml:lang="ko">신용카드 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_directbank" type="select">
+		<title xml:lang="ko">계좌이체</title>
+		<description xml:lang="ko">계좌이체 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+	<var name="paymethod_virtualbank" type="select">
+		<title xml:lang="ko">가상계좌</title>
+		<description xml:lang="ko">가상계좌 사용여부를 선택하세요. 이니시스와 계약이 되어 있어야 합니다.</description>
+		<options value="N">
+			<title xml:lang="ko">사용안함</title>
+		</options>
+		<options value="Y">
+			<title xml:lang="ko">사용</title>
+		</options>
+	</var>
+</group>
+
+v 0.3.6
+23rd, Aug 2018
+1. svshopmaster v 0.1.3의 레이아웃 표시 방법 변경에 대응
+./svpg.admin.view.php::init()에 아래의 코드 추가
+if(Context::get('module') == 'svshopmaster')
+{
+	$sClassPath = _XE_PATH_ . 'modules/svshopmaster/svshopmaster.class.php';
+	if(file_exists($sClassPath))
+	{
+		require_once($sClassPath);
+		svshopmaster::init($this);
+	}
+}
+
+v 0.3.7
+15th, Nov 2018
+1. PG 플러그인 목록 화면 삐뚜러지는 문제 해결
+./tpl/pluginlist.html에서 아래의 코드를
+<tr class="row{$cycle_idx}">
+아래와 같이 변경
+<tr>
+
+v 0.3.8
+9th, Mar 2019
+1. 미사용 코드 제거
+./svpg.model.php::getPaymentMethods() 제거
+./svpg.model.php::getPaymentMethodName() 제거
+
+2. 결제 방식 정보 가져오는 메소드 추가
+./svpg.model.php::getPaymentMethodLabel() 추가
+
+v 0.3.9
+11th, Mar 2019
+1. PG 페이지 생성할 때 브라우저 제목, 레이아웃, 스킨 선택 항 제거
+./tpl/insertsvpg.html에서 아래의 코드 제거
+<div class="x_control-group">
+	<label class="x_control-label">{$lang->browser_title}</label>
+	<div class="x_controls">
+		<input type="text" name="browser_title" value="{htmlspecialchars($module_info->browser_title)}"  class="inputTypeText w400 lang_code" id="browser_title"/>
+		<a href="#browser_title_help" class="x_icon-question-sign" data-toggle>{$lang->help}</a>
+		<p id="browser_title_help" class="x_help-block" hidden>{$lang->about_browser_title}</p>
+	</div>
+</div>
+<div class="x_control-group">
+	<label class="x_control-label">{$lang->layout}</label>
+	<div class="x_controls">
+		<select name="layout_srl">
+			<option value="0">{$lang->notuse}</option>
+			<option loop="$layout_list=>$key,$val" value="{$val->layout_srl}" selected="selected"|cond="$module_info->layout_srl==$val->layout_srl">{$val->title} ({$val->layout})</option>
+		</select>
+		<a href="#layout_srl_help" class="x_icon-question-sign" data-toggle>{$lang->help}</a>
+		<p id="layout_srl_help" class="x_help-block" hidden>{$lang->about_layout}</p>
+	</div>
+</div>
+<div class="x_control-group">
+	<label class="x_control-label">{$lang->skin}</label>
+	<div class="x_controls">
+		<select name="skin">
+			<option loop="$skin_list=>$key,$val" value="{$key}" selected="selected"|cond="$module_info->skin==$key">{$val->title}</option>
+		</select>
+		<a href="#skin_help" class="x_icon-question-sign" data-toggle>{$lang->help}</a>
+		<p id="skin_help" class="x_help-block" hidden>{$lang->about_skin}</p>
+	</div>
+</div>
+
+2. 관리자 화면에서 결제 금지일 설정의 입력 오류 발생 가능성 차단
+./svpg.admin.controller.php::procSvpgAdminInsertSvpg()에 아래의 코드 추가
+if( $args->forbid_settlement_after )
+{
+	$oDate = DateTime::createFromFormat('YmdHis', $args->forbid_settlement_after);
+	if( !$oDate )
+		return new Object(-1, 'msg_invalid_forbid_settlement_date');
+}
+
+v 0.3.10
+11th, Mar 2019
+1. PG 페이지 생성할 때 브라우저 제목이 공란이 되지 않게 함. 메뉴 설정에서 클릭 불가능해서 문제 발생
+./svpg.admin.controller.php::procSvpgAdminInsertSvpg()에 아래의 코드 추가
+$args->browser_title = 'svpg_'.date('Ymd');
+
+2. svshopmaster 화면에서 PG 모듈 삭제하면 svshopmaster 레이아웃으로 리다이렉트
+./tpl/svpglist.html에서 아래의 코드를
+<input type="hidden" name="module" value="svpg" />
+
+아래와 같이 변경
+<input type="hidden" name="module" value="{$module}" />
+
+v 0.3.11
+1st, Jun 2019
+1. svshopmaster v 1.0.13에 대응
+./svorder.admin.view.php::init()에서 아래의 코드 제거
+if(Context::get('module')=='svshopmaster')
+{
+	$this->setLayoutPath('');
+	$this->setLayoutFile('common_layout');
+}
+
+v 0.4.0
+2nd, Jul 2019
+1. naverpay plugin 추가
+
+2. 코드 정리
+./svpg.class.php::mergeKeywords() 제거
+
+./svpg.admin.controller.php::_mergeKeywords() 추가
+
+./svpg.admin.controller.php::procSvpgAdminInsertSvpg()에서 아래의 코드를
+$location = $this->mergeKeywords($vars->location,$extra_vars);
+아래와 같이 변경
+$location = $this->_mergeKeywords($vars->location,$extra_vars);
+
+3. 미사용 코드 제거
+./svpg.class.php에서 아래 코드 제거
+define('STATE_NOTCOMPLETED', '1');
+define('STATE_COMPLETED', '2');
+define('STATE_FAILURE', '3');
+
+./svpg.model.php::getSvpgSalesData() 제거
+
+./svpg.controller.php::procSvpgUpdateState() 제거
+
+4. 지불 방법 통일성 개선
+./svpg.class.php에 아래 코드 추가
+protected $_g_aPaymentMethod = array(
+	'CREDIT_CARD'=>'CC', 
+	'REALTIME_INTERNET_BANKING'=>'IB', 
+	'VIRTUAL_ACCOUNT'=>'VA', 
+	'MOBILE_PAY'=>'MP', 
+	'EASY_CREDIT_CARD'=>'EC', // naver pay 신용카드 간편결제
+	'EASY_ACCOUNT'=>'EA', // naver pay 계좌 간편결제
+	'EASY_MOBILE_PAY'=>'EM', // naver pay 휴대폰 간편결제
+	'NAVER_POINT'=>'NP' // naver pay 포인트결제
+	); 
+
+./svpg.plugin.php에 아래 코드 추가
+extends svpg
+
+./svpg.class.php::getPaymentMethodLabel()에서 아래의 코드를
+$aPaymentMethod = array(
+	'CC'=>'credit_card',
+	'BT'=>'bank_transfer',
+	'IB'=>'internet_banking',
+	'VA'=>'virtual_account',
+	'MP'=>'mobile_phone',
+	'PP'=>'paypal'
+);
+
+아래와 같이 변경
+$aPaymentMethod = array_flip($this->_g_aPaymentMethod);
+
+./plugins/xpay/xpay.plugin.php::processReview()에서
+if( $this->plugin_info->paymethod_card=='Y' && $args->payment_method=='CC' )
+	$usablepay = 'SC00101';
+if( $this->plugin_info->paymethod_directbank=='Y' && $args->payment_method=='IB' )
+	$usablepay = 'SC0030';
+if( $this->plugin_info->paymethod_virtualbank=='Y' && $args->payment_method=='VA' )
+	$usablepay = 'SC0040';
+if( $this->plugin_info->paymethod_phone=='Y' && $args->payment_method=='MP' )
+	$usablepay = 'SC0060';
+
+아래의 코드를 아래와 같이 변경
+if( $this->plugin_info->paymethod_card=='Y' && $args->payment_method==$this->_g_aPaymentMethod['credit_card'] )
+	$usablepay = 'SC00101';
+if( $this->plugin_info->paymethod_directbank=='Y' && $args->payment_method==$this->_g_aPaymentMethod['internet_banking'] )
+	$usablepay = 'SC0030';
+if( $this->plugin_info->paymethod_virtualbank=='Y' && $args->payment_method==$this->_g_aPaymentMethod['virtual_account'] )
+	$usablepay = 'SC0040';
+if( $this->plugin_info->paymethod_phone=='Y' && $args->payment_method==$this->_g_aPaymentMethod['mobile_phone'] )
+	$usablepay = 'SC0060';
+
+./plugins/xpay/xpay.plugin.php::processReview()에서 아래의 코드를 
+case 'SC0010':
+	return 'CC';
+case 'SC0030':
+	return 'IB';
+case 'SC0040':
+	return 'VA';
+case 'SC0060':
+	return 'MP';
+
+아래와 같이 변경
+case 'SC0010':
+	return $this->_g_aPaymentMethod['credit_card'];
+case 'SC0030':
+	return $this->_g_aPaymentMethod['internet_banking'];
+case 'SC0040':
+	return $this->_g_aPaymentMethod['virtual_account'];
+case 'SC0060':
+	return $this->_g_aPaymentMethod['mobile_phone'];
+
+./svpg.view.php::getPaymentForm()에 아래의 코드 추가
+Context::set('payment_methods', $this->_g_aPaymentMethod);
+
+./plugins/.../tpl/formdata.html에서 관련 코드 변경
+
+v 0.4.1
+23rd, Aug 2019
+1. svorder v2.1.0에 대응
+./svpg.controller.php::procSvpgReport()에서 아래의 코드를
+if( $pr_ret->toBool() ) 
+{
+	switch( $sPgRstCode )
+	{
+		case 'SVPG_VAC': // virutal_account_confirmed
+			$sRespCode = 'OK';
+			break;
+		case 'SVPG_RC': // receive_confirmed
+			$sRespCode = $this->_updateTransaction($transaction, 2);
+			break;
+		case 'SVPG_CC': // cancel_confirmed
+			$sRespCode = $this->_updateTransaction($transaction, 1);
+			break;
+	}
+}
+
+아래와 같이 변경
+$oDummy = &getClass('svorder');
+if( $pr_ret->toBool() ) 
+{
+	switch( $sPgRstCode )
+	{
+		case 'SVPG_VAC': // virutal_account_confirmed
+			$sRespCode = 'OK';
+			break;
+		case 'SVPG_RC': // receive_confirmed
+			$sRespCode = $this->_updateTransaction($transaction, svorder::ORDER_STATE_PAID);//2);
+			break;
+		case 'SVPG_CC': // cancel_confirmed
+			$sRespCode = $this->_updateTransaction($transaction, svorder::ORDER_STATE_ON_DEPOSIT);//1);
+			break;
+	}
+}
+
+v 0.4.2
+17th, Dec 2019
+1. svorder v3.0.0에 대응
+./svpg.controller.php::procSvpgReviewOrder()에서 아래의 코드를
+$args->svpg_module_srl = $nSvpgModuleSrl;
+$args->plugin_srl = $nPluginSrl;
+$oModuleModel = &getModel('module');
+$oModuleInfo = $oModuleModel->getModuleInfoByModuleSrl($nSvpgModuleSrl);
+$args->plugin_name = $oModuleInfo->plugin_name;
+$oSvorderController = &getController('svorder');
+$output = $oSvorderController->precheckOrder($args);
+if (!$output->toBool())
+	return $output;
+
+$nOrderSrl = $output->get('order_srl');
+$args->order_srl = $nOrderSrl; 
+
+$oSvcartController = &getController('svcart');
+$output = $oSvcartController->reviewCart($args);
+if (!$output->toBool())
+	return $output;
+
+// $_SESSION 제거하고 디비에 필요 변수를 임시 저장해야 함
+$_SESSION['module_srl'] = $nModuleSrl;
+$_SESSION['svpg_module_srl'] = $nSvpgModuleSrl;
+$_SESSION['order_srl'] = $nOrderSrl; 
+$_SESSION['svpg_target_module'] = $args->target_module;
+$_SESSION['xe_mid'] = Context::get('xe_mid');
+
+$oSvpgModel = &getModel('svpg');
+$oPlugin = $oSvpgModel->getPlugin($nPluginSrl);
+$oReviewOutput = $oPlugin->processReview($args);
+if (!$oReviewOutput->toBool()) 
+	return $oReviewOutput;
+
+아래와 같이 변경
+$oSvorderController = &getController('svorder');
+$output = $oSvorderController->precheckOrder($args);
+if (!$output->toBool())
+	return $output;
+
+$nOrderSrl = $output->get('nOrderSrl');
+$args->order_srl = $nOrderSrl;
+// to set final paying amnt for PG
+$args->price = $output->get('nTotalPriceForPg');
+// to set final payer info for PG
+$args->purchaser_cellphone = $output->get('sPurchaserCellphone');
+
+$args->svpg_module_srl = $nSvpgModuleSrl;
+$args->plugin_srl = $nPluginSrl;
+$oModuleModel = &getModel('module');
+$oModuleInfo = $oModuleModel->getModuleInfoByModuleSrl($nSvpgModuleSrl);
+$args->plugin_name = $oModuleInfo->plugin_name;
+
+$oSvcartController = &getController('svcart');
+$output = $oSvcartController->setEstiOrderSrl($args);
+if (!$output->toBool())
+	return $output;
+
+// $_SESSION 제거하고 디비에 필요 변수를 임시 저장해야 함
+$_SESSION['module_srl'] = $nModuleSrl;
+$_SESSION['svpg_module_srl'] = $nSvpgModuleSrl;
+$_SESSION['order_srl'] = $nOrderSrl; 
+$_SESSION['svpg_target_module'] = $args->target_module;
+$_SESSION['xe_mid'] = Context::get('xe_mid');
+
+$oSvpgModel = &getModel('svpg');
+$oPlugin = $oSvpgModel->getPlugin($nPluginSrl);
+$oReviewOutput = $oPlugin->processReview($args);
+if (!$oReviewOutput->toBool()) 
+	return $oReviewOutput;
+
+./plugins/cash/tpl/review.html에서 아래의 코드를
+<input type="hidden" name="order_title" value="{$order_title}" />
+
+아래와 같이 변경
+<input type="hidden" name="svpg_order_title" value="{$svpg_order_title}" />
+
+./plugins/cash/tpl/start.html에서 아래의 코드를
+<td class="orangeTop">{$order_title}</td>
+
+아래와 같이 변경
+<td class="orangeTop">{$svpg_order_title}</td>
+
+./plugins/cash/cash.plugin.php::processReview()에서 아래의 코드 제거
+if( $args->delivfee_inadvance == 'N' )
+	$args->price -= $args->delivery_fee;
+
+./plugins/xpay/xpay.plugin.php::processReview()에서 아래의 코드 제거
+if( $args->delivfee_inadvance == 'N' )
+	$args->price -= $args->delivery_fee;
+
+./plugins/xpay_smpart/xpay_smart.plugin.php::processReview()에서 아래의 코드 제거
+if( $args->delivfee_inadvance == 'N' )
+	$args->price -= $args->delivery_fee;
+
+./plugins/iniescrow/iniescrow.plugin.php::processReview()에서 아래의 코드 제거
+if( $args->delivfee_inadvance == 'N' )
+	$args->price -= $args->delivery_fee;
+
+./plugins/inipay5/inipay5.plugin.php::processReview()에서 아래의 코드 제거
+if( $args->delivfee_inadvance == 'N' )
+	$args->price -= $args->delivery_fee;
+
+./plugins/inipaymobile/inipaymobile.plugin.php::processReview()에서 아래의 코드 제거
+if( $args->delivfee_inadvance == 'N' )
+	$args->price -= $args->delivery_fee;
+
+./svpg.controller.php::procSvpgDoPayment()에서 아래의 코드를
+$output = $oSvcartController->confirmCart($args);
+
+아래와 같이 변경
+$output = $oSvcartController->deactivateCart($args);
+
+2. 코드 오류 수정
+./cash plugin을 사용하면 결제하기를 완료하지 않고 클릭을 반복하면 상품명에 |@|가 계속 추가되는 오류 
+./cash plugin을 사용하면 한번에 결제해도 transaction tbl order_title에 |@|가 추가되는 오류
+
+./plugins/cash/tpl/review.html에서 아래의 코드 제거
+<input type="hidden" name="svpg_order_title" value="{$svpg_order_title}" />
+
+3. OOP 개선
+./svpg.controller.php::procSvpgReport()에서 아래의 코드를
+$oDummy = &getClass('svorder');
+
+아래와 같이 변경
+if( !defined('svorder::ORDER_STATE_ON_DEPOSIT') )
+	getClass('svorder');
+
+4. 미사용 코드 제거
+./svpg.controller.php::procSvpgReport()에서 아래의 코드 제거
+if($obj->manorder_pid) 
+	$manorder_pid = $obj->manorder_pid; // 결제대행 유저 아이디.
+
+if($manorder_pid)
+{
+	$args->user_id = $manorder_pid;
+///// member 모듈 메소드 사용해야 함
+	$output = executeQuery('member.getMemberInfo', $args);
+	$args->p_member_srl = $output->data->member_srl;
+	$args->p_user_id = $output->data->user_id;
+	$args->p_name = $output->data->nick_name;
+	$args->p_email_address = $output->data->email_address;
+}
+if(!$manorder_pid && !$logged_info)
+{
+	$args->p_member_srl = 0;
+	$args->p_user_id = $p_user_id;
+	$args->p_name = $p_name;
+	$args->p_email_address = $p_email_address;
+}
+
+5. npay api 주문 추가 후에도 svpg_transaction 입력할 수 있도록 변경
+./svpg.controller.php::logTransaction() 추가
+
+./queries/insertTransaction.xml에서 아래의 코드를
+<column name="target_module" var="target_module" notnull="notnull" />
+<column name="p_email_address" var="p_email_address" notnull="notnull" default='' />
+<column name="result_code" var="result_code" notnull="notnull" />
+<column name="result_message" var="result_message" notnull="notnull" />
+
+아래와 같이 변경
+<column name="target_module" var="target_module" />
+<column name="p_email_address" var="p_email_address" default='' />
+<column name="result_code" var="result_code" />
+<column name="result_message" var="result_message" />
+
+6. svorder와 엉켜있는 스파게티 코드 개선
+./svpg.controller.php::procSvpgDoPayment()에서 아래의 코드 제거
+$return_url = $args->return_url;
+if (!$return_url)
+	$return_url = Context::get('return_url');
+
+./svpg.controller.php::procSvpgDoPayment()에서 아래의 코드를
+if(!in_array(Context::getRequestMethod(),array('XMLRPC','JSON')))  // xpay_smart에서 작동
+{
+	$returnUrl = $return_url ? $return_url : getNotEncodedUrl('','act','dispSvorderOrderComplete','order_srl',$order_srl,'mid',$mid);
+	$this->setRedirectUrl($returnUrl);
+}
+else // xpay에서 작동
+{
+	$this->add('return_url', $return_url);
+	$this->add('order_srl', $order_srl);
+}
+
+아래와 같이 변경
+$sReturnUrl = getNotEncodedUrl('','act','dispSvorderOrderComplete','order_srl',$order_srl,'mid',$mid);
+if(!in_array(Context::getRequestMethod(),array('XMLRPC','JSON')))  // xpay_smart에서 작동
+	$this->setRedirectUrl($sReturnUrl);
+else // xpay에서 작동
+{
+	$this->add('return_url', $sReturnUrl);
+	$this->add('order_srl', $order_srl);
+}
+
+7. 결제 방식 언어표기 정보 추가
+./svpg.model.php::getTransactionByOrderSrl()에 아래의 코드 추가
+$aTranslation = Context::getLang('payment_method');
+$payment_info->payment_method_translated = $aTranslation[$payment_info->payment_method];
+
+v 0.4.3
+03rd, Jan 2020
+1. svorder v3.0.0에 대응
+./svpg.admin.controller.php::procSvpgAdminCancelSettlement()에서 아래의 코드 제거
+$args->target_module=$oTransaction->target_module;
+
+./queries/insertCancelLog.xml에서 아래의 코드를
+ <column name="target_module" var="target_module" notnull="notnull" />
+
+아래와 같이 변경
+ <column name="target_module" var="target_module" />
+
+v 0.4.4
+17th, Feb 2020
+1. PG사에서 거부한 결제요청도 log를 남김
+
+./svpg.controller.php::procSvpgDoPayment()에서 아래의 코드를
+$pp_ret = $plugin->processPayment($obj);
+if(!$pp_ret->toBool())
+{
+	$this->setError(-1);
+	$this->setMessage($pp_ret->result_message);
+	return new Object(-1, 'msg_error_occured_while_payment');
+}
+
+아래와 같이 변경
+$pp_ret = $plugin->processPayment($obj);
+if(!$pp_ret->toBool())
+{
+	$this->setError(-1);
+	$this->setMessage($pp_ret->result_message);
+	// save error transaction info begin.
+	$args->result_code = $pp_ret->get('result_code');
+	$args->result_message = $pp_ret->get('result_message');
+	$args->pg_tid = $pp_ret->get('pg_tid');
+	$args->state = $pp_ret->get('state');
+	$extra_vars = $pp_ret->getVariables();
+	unset($extra_vars['state']);
+	unset($extra_vars['payment_method']);
+	unset($extra_vars['payment_amount']);
+	$args->extra_vars = serialize($extra_vars);
+	$args->target_module = $target_module;
+	$args->svpg_module_srl = $svpg_module_srl;
+	$args->module_srl = $module_srl;
+	$args->plugin_srl = $plugin->plugin_info->plugin_srl;
+	$args->order_srl = $order_srl;
+	$args->order_title = $obj->svpg_order_title;
+	$args->payment_method = $pp_ret->get('payment_method');
+	$args->payment_amount = $pp_ret->get('payment_amount');
+	$logged_info = Context::get('logged_info');
+	if($logged_info)
+	{
+		$args->p_member_srl = $logged_info->member_srl;
+		$args->p_user_id = $logged_info->user_id;
+		$args->p_name = $logged_info->nick_name;
+		$args->p_email_address = $logged_info->email_address;
+	}
+	else
+	{
+		$args->p_member_srl = 0;
+		$args->p_user_id = $p_user_id;
+		$args->p_name = $p_name;
+		$args->p_email_address = $p_email_address;
+	}
+	$output = $this->logTransaction($args);
+	// save error transaction info end.
+	return new Object(-1, 'msg_error_occured_while_payment');
+}
+
+./svpg.admin.model.php::getTransactionByOrderSrl()에 아래의 코드 추가
+$args->state = array('1','2');
+
+./svpg.model.php::getTransactionByOrderSrl()에 아래의 코드 추가
+$args->state = array('1','2');
+
+./queries/getTransactionByOrderSrl.xml에 아래의 코드 추가
+<condition operation="in" column="state" var="state" notnull="notnull" pipe="and"/>
+
+v 0.4.5
+23rd, Feb 2020
+1. PG사에서 거부한 결제요청 log를 별도의 테이블에 남김
+./svpg.controller.php::procSvpgDoPayment()에서 아래의 코드를
+if(!$pp_ret->toBool())
+{
+	$this->setError(-1);
+	$this->setMessage($pp_ret->result_message);
+	// save error transaction info begin.
+	$args->result_code = $pp_ret->get('result_code');
+	$args->result_message = $pp_ret->get('result_message');
+	$args->pg_tid = $pp_ret->get('pg_tid');
+	$args->state = $pp_ret->get('state');
+	$extra_vars = $pp_ret->getVariables();
+	unset($extra_vars['state']);
+	unset($extra_vars['payment_method']);
+	unset($extra_vars['payment_amount']);
+	$args->extra_vars = serialize($extra_vars);
+	$args->target_module = $target_module;
+	$args->svpg_module_srl = $svpg_module_srl;
+	$args->module_srl = $module_srl;
+	$args->plugin_srl = $plugin->plugin_info->plugin_srl;
+	$args->order_srl = $order_srl;
+	$args->order_title = $obj->svpg_order_title;
+	$args->payment_method = $pp_ret->get('payment_method');
+	$args->payment_amount = $pp_ret->get('payment_amount');
+	$logged_info = Context::get('logged_info');
+	if($logged_info)
+	{
+		$args->p_member_srl = $logged_info->member_srl;
+		$args->p_user_id = $logged_info->user_id;
+		$args->p_name = $logged_info->nick_name;
+		$args->p_email_address = $logged_info->email_address;
+	}
+	else
+	{
+		$args->p_member_srl = 0;
+		$args->p_user_id = $p_user_id;
+		$args->p_name = $p_name;
+		$args->p_email_address = $p_email_address;
+	}
+	$output = $this->logTransaction($args);
+	// save error transaction info end.
+	return new Object(-1, 'msg_error_occured_while_payment');
+}
+
+아래와 같이 변경
+if(!$pp_ret->toBool())
+{
+	$this->setError(-1);
+	$this->setMessage($pp_ret->result_message);
+	// save error transaction info begin.
+	$args->result_code = $pp_ret->get('result_code');
+	$args->result_message = $pp_ret->get('result_message');
+	$args->pg_tid = $pp_ret->get('pg_tid');
+	$args->state = $pp_ret->get('state');
+	$extra_vars = $pp_ret->getVariables();
+	unset($extra_vars['state']);
+	unset($extra_vars['payment_method']);
+	unset($extra_vars['payment_amount']);
+	$args->extra_vars = serialize($extra_vars);
+	$args->target_module = $target_module;
+	$args->svpg_module_srl = $svpg_module_srl;
+	$args->module_srl = $module_srl;
+	$args->plugin_srl = $plugin->plugin_info->plugin_srl;
+	$args->order_srl = $order_srl;
+	$args->payment_method = $pp_ret->get('payment_method');
+	$args->payment_amount = $pp_ret->get('payment_amount');
+	
+	$output = executeQuery('svpg.insertTransactionErr',$args); //$output = $this->logTransaction($args);
+	// save error transaction info end.
+	return new Object(-1, 'msg_error_occured_while_payment');
+}
+
+2. tbl::log_transaction 최적화
+./schemas/svpg_transactions.xml에서 아래의 코드 제거
+<column name="target_module" type="varchar" size="80" />
+<column name="order_title" type="varchar" size="250" />
+<column name="p_member_srl" type="number" size="11" index="idx_member_srl" />
+<column name="p_user_id" type="varchar" size="80" />
+<column name="p_name" type="varchar" size="40" />
+<column name="p_email_address" type="varchar" size="250" />
+
+./queries/insertTransaction.xml에서 아래의 코드 제거
+<column name="target_module" var="target_module" />
+<column name="order_title" var="order_title" />
+<column name="p_member_srl" var="p_member_srl" notnull="notnull" default='0' />
+<column name="p_user_id" var="p_user_id" notnull="notnull" default='' />
+<column name="p_name" var="p_name" notnull="notnull" default='' />
+<column name="p_email_address" var="p_email_address" default='' />
+
+v 0.4.6
+15th, Mar 2020
+1. npay 주문 정보 초기화를 위해 svpromotion_cart 정보 삭제 기능 추가
+./svpg.admin.controller.php::deleteTransactionByOrderSrl() 추가
+./queries/deleteTransactionByOrderSrl.xml 추가
+
+v 0.4.7
+14th, Apr 2020
+1. 회원이 모바일로 PG 모듈 실행 과정에서 로그인이 풀려버릴 경우에 결제 완료 못시키는 문제 대응
+./svpg.controller.php::procSvpgDoPayment()에 아래의 코드 추가
+$args->calling_method = 'svpg::procSvpgDoPayment()';
+
+v 0.4.8
+17th, Aug 2020
+1. 작동 오류 수정
+./queries/getTransactionList.xml에서 아래의 코드를
+<tables>
+	<table name="svpg_transactions" alias="tran" />
+	<table name="modules" alias="module" type="left join">
+		<conditions>
+			<condition operation="equal" column="module.module_srl" default="tran.module_srl" />
+		</conditions>
+	</table>
+	<table name="member" alias="member" type="left join">
+		<conditions>
+			<condition operation="equal" column="member.member_srl" default="tran.p_member_srl" />
+		</conditions>
+	</table>
+	<table name="svpg_plugins" alias="plugin" type="left join">
+		<conditions>
+			<condition operation="equal" column="plugin.plugin_srl" default="tran.plugin_srl" />
+		</conditions>
+	</table>
+</tables>
+<columns>
+	<column name="tran.transaction_srl" alias="transaction_srl" />
+	<column name="tran.svpg_module_srl" alias="svpg_module_srl" />
+	<column name="tran.module_srl" alias="module_srl" />
+	<column name="tran.target_module" alias="target_module" />
+	<column name="tran.order_srl" alias="order_srl" />
+	<column name="tran.order_title" alias="order_title" />
+	<column name="tran.payment_method" alias="payment_method" />
+	<column name="tran.payment_amount" alias="payment_amount" />
+	<column name="tran.p_member_srl" alias="p_member_srl" />
+	<column name="tran.p_user_id" alias="p_user_id" />
+	<column name="tran.p_name" alias="p_name" />
+	<column name="tran.p_email_address" alias="p_email_address" />
+	<column name="tran.result_code" alias="result_code" />
+	<column name="tran.result_message" alias="result_message" />
+	<column name="tran.state" alias="state" />
+	<column name="tran.extra_vars" alias="extra_vars" />
+	<column name="tran.regdate" alias="regdate" />
+	<column name="module.mid" alias="mid" />
+	<column name="module.browser_title" alias="browser_title" />
+	<column name="plugin.plugin_srl" alias="plugin_srl" />
+	<column name="plugin.plugin" alias="plugin_name" />
+	<column name="plugin.title" alias="plugin_title" />
+	<column name="member.user_id" alias="user_id" />
+	<column name="member.user_name" alias="user_name" />
+	<column name="member.nick_name" alias="nick_name" />
+</columns>
+
+아래와 같이 변경
+<tables>
+	<table name="svpg_transactions" alias="tran" />
+	<table name="modules" alias="module" type="left join">
+		<conditions>
+			<condition operation="equal" column="module.module_srl" default="tran.module_srl" />
+		</conditions>
+	</table>
+	<table name="svpg_plugins" alias="plugin" type="left join">
+		<conditions>
+			<condition operation="equal" column="plugin.plugin_srl" default="tran.plugin_srl" />
+		</conditions>
+	</table>
+</tables>
+<columns>
+	<column name="tran.transaction_srl" alias="transaction_srl" />
+	<column name="tran.svpg_module_srl" alias="svpg_module_srl" />
+	<column name="tran.module_srl" alias="module_srl" />
+	<column name="tran.order_srl" alias="order_srl" />
+	<column name="tran.payment_method" alias="payment_method" />
+	<column name="tran.payment_amount" alias="payment_amount" />
+	<column name="tran.result_code" alias="result_code" />
+	<column name="tran.result_message" alias="result_message" />
+	<column name="tran.state" alias="state" />
+	<column name="tran.extra_vars" alias="extra_vars" />
+	<column name="tran.regdate" alias="regdate" />
+	<column name="module.mid" alias="mid" />
+	<column name="module.browser_title" alias="browser_title" />
+	<column name="plugin.plugin_srl" alias="plugin_srl" />
+	<column name="plugin.plugin" alias="plugin_name" />
+	<column name="plugin.title" alias="plugin_title" />
+</columns>
+
+./tpl/transactions.html에서 아래의 코드를 제거
+
+<th>{$lang->products_ordered}</th>
+<th>{$lang->user_id}</th>
+<th>{$lang->user_name}</th>
+<th>{$lang->nick_name}</th>
+
+<td>
+	<a cond="$tran->target_act" href="#viewOrderInfo" class="modalAnchor viewOrderInfo" data-target-module="{$tran->target_module}" data-target-act="{$tran->target_act}"  data-order-srl="{$tran->order_srl}">{$tran->order_title}</a>
+	<block cond="!$tran->target_act">{$tran->order_title}</block>
+</td>
+<block cond="$tran->user_id">
+	<td><a href="#popup_menu_area" class="cMenu member_{$tran->p_member_srl}">{$tran->user_id}</a></td>
+	<td><a href="#popup_menu_area" class="cMenu member_{$tran->p_member_srl}">{$tran->user_name}</a></td>
+	<td><a href="#popup_menu_area" class="cMenu member_{$tran->p_member_srl}">{$tran->nick_name}</a></td>
+</block>
+<block cond="!$tran->user_id">
+	<td colspan="3">탈퇴한 회원({$tran->p_user_id})</td>
+</block>
+
+v 0.5.0
+20th, Dec 2020
+1. php v7.4.13에 대응
+모든 new Object()를 new BaseObject()로 변경
+
+----------- todo -------------------------------------
+./plugins/naverpay  제거
+
+./schemas/svpg_transaction에서 아래의 코드 제거
+<column name="target_module" type="varchar" size="80" />
+<column name="p_member_srl" type="number" size="11" index="idx_member_srl" />
+<column name="p_user_id" type="varchar" size="80" />
+<column name="p_name" type="varchar" size="40" />
+<column name="p_email_address" type="varchar" size="250" />
+
+./schemas/svpg_cancel_log 아래의 코드 제거
+<column name="target_module" type="varchar" size="80" />
+<column name="admin_user_id" type="varchar" size="80" />
+<column name="admin_name" type="varchar" size="40" />
+<column name="admin_email_address" type="varchar" size="250" />
+<column name="p_user_id" type="varchar" size="80" />
+<column name="p_name" type="varchar" size="40" />
+<column name="p_email_address" type="varchar" size="250" />
+
+./plugins/xpay_smart/xpay_smart.plugin.php::processReview()에서 아래의 코드 제거
+$_SESSION['svpg_http_vars'] = Context::getRequestVars();
+
+PG 통신 과정에서 $_SESSION 사용하지 말고, order_srl 기준으로 DB에 임시 변수 저장해야 함
+
+이니시스 로그 디렉토리 정리
+
+./svpg.admin.controller.php::procSvpgAdminInsertSvpg()에서  if ($vars->location) 부분 type=file로 변환해야 함 svauth 참조

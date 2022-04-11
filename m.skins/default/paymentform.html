@@ -1,0 +1,38 @@
+<load target="css/style.css" />
+<load target="css/btn.css" />
+<load target="../../tpl/js/common.js" />
+<div class="payment_wrapper">
+	{$form_data}
+</div>
+<script>
+        (function($) {
+                jQuery(function($) {
+                        $('#svpg_form').submit(function() {
+                                var mid = $('#select_method input[name=payment_method]:checked').attr('data-mid');
+                                var module = $('#select_method input[name=payment_method]:checked').attr('data-module');
+                                var act = $('#select_method input[name=payment_method]:checked').attr('data-act');
+                                var mode = $('#select_method input[name=payment_method]:checked').attr('data-mode');
+                                if (mode == 'ajax') {
+                                        var params = new Array();
+                                        var responses = ['error','message','tpl'];
+                                        exec_xml(module, act, params, function(ret_obj) {
+                                                var tpl = ret_obj.tpl.replace(/<enter>/g, '\n');
+                                                $('#payment_form').html(tpl);
+                                                inipay_submit('fo_insert_order');
+                                        }, responses);
+                                        return false;
+                                } else {
+                                        if (mid) $('#svpg_form input[name=mid]').val(mid);
+                                        if (module) $('#svpg_form input[name=module]').val(module);
+                                        if (act) $('#svpg_form input[name=act]').val(act);
+                                }
+                                copy_form('fo_insert_order', 'svpg_form');
+                        });
+                        $('#svpg_form input[name=payment_method]').click(function() {
+                                var id = $(this).attr('id');
+                                $('#svpg_form .payment_info p').hide();
+                                $('#svpg_form .payment_info p#guide_'+id).show();
+                        });
+                });
+        }) (jQuery);
+</script>

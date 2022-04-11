@@ -1,0 +1,51 @@
+<include target="header.html" />
+<load target="js/pluginlist.js" />
+
+<div cond="$XE_VALIDATOR_MESSAGE" class="message {$XE_VALIDATOR_MESSAGE_TYPE}">
+        <p>{$XE_VALIDATOR_MESSAGE}</p>
+</div>
+
+<table cellspacing="0" class="x_table x_table-striped x_table-hover">
+	<thead>
+	    <tr>
+			<th >{$lang->no}</th>
+			<th >{$lang->plugin_id}</th>
+			<th >{$lang->title}</th>
+			<th >{$lang->regdate}</th>
+			<th >{$lang->cmd_modify}</th>
+			<th >{$lang->cmd_delete}</div></th>
+	    </tr>
+	</thead>
+	<tbody>
+	    <!--@foreach($plugins as $no => $val)-->
+		<tr>
+			<td class="number center">{$no}</td>
+			<td>{$val->plugin}</td>
+			<td class="wide">{htmlspecialchars($val->title)}</td>
+			<td class="nowrap">{zdate($val->regdate,"Y-m-d")}</td>
+			<td>
+					<a href="{getUrl('act','dispSvpgAdminUpdatePlugin','plugin_srl',$val->plugin_srl)}"><span>{$lang->cmd_modify}</span></a>
+
+			</td>
+			<td>
+				<a href="#deleteInstance" class="modalAnchor deleteInstance" data-plugin-srl="{$val->plugin_srl}"><span>{$lang->cmd_delete}</span></a>
+			</td>
+	    </tr>
+	    <!--@end-->
+	</tbody>
+</table>
+
+<include target="_page_navigation.html" />
+
+<div class="x_btn-gruop x_pull-right">
+	<a href="{getUrl('act','dispSvpgAdminInsertPlugin','plugin_srl','')}" class="x_btn"><span>{$lang->cmd_make}</span></a>
+</div>
+
+<div class="x_modal" id="deleteInstance">
+        <form action="./" class="fg form" method="post">
+                <input type="hidden" name="module" value="svpg" />
+                <input type="hidden" name="act" value="procSvpgAdminDeletePlugin" />
+                <div id="deleteForm">
+                </div>
+        </form>
+</div>

@@ -1,0 +1,9 @@
+<filter name="submit_review" module="svpg" act="procSvpgReviewOrder">
+    <form />
+    <parameter />
+    <response callback_func="completeReviewOrder">
+        <tag name="error" />
+        <tag name="message" />
+        <tag name="tpl" />
+    </response>
+</filter>

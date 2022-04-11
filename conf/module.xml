@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+	<grants />
+	<permissions />
+	<actions>
+		<action name="dispSvpgAdminSvpgList" type="view" />
+		<action name="dispSvpgAdminInsertSvpg" type="view" />
+		<action name="dispSvpgAdminPluginList" type="view" />
+		<action name="dispSvpgAdminInsertPlugin" type="view" />
+		<action name="dispSvpgAdminUpdatePlugin" type="view" />
+		<action name="dispSvpgAdminTransactions" type="view" admin_index="false" />
+		<action name="dispSvpgAdminSkinInfo" type="view" />
+		<action name="dispSvpgAdminMobileSkinInfo" type="view" />
+
+		<action name="procSvpgAdminInsertSvpg" type="controller" />
+		<action name="procSvpgAdminInsertPlugin" type="controller" />
+		<action name="procSvpgAdminUpdatePlugin" type="controller" />
+		<action name="procSvpgAdminDeletePlugin" type="controller" />
+		<action name="procSvpgAdminDeleteModInst" type="controller" />
+
+		<action name="getSvpgAdminDeletePlugin" type="model" />
+		<action name="getSvpgAdminDeleteModInst" type="model" />
+
+		<action name="dispSvpgExtra1" type="view" />
+		<action name="dispSvpgExtra2" type="view" />
+		<action name="dispSvpgExtra3" type="view" />
+		<action name="dispSvpgExtra4" type="view" />
+		<action name="dispSvpgTransaction" type="view" index="true" />
+		<action name="dispSvpgError" type="view" />
+
+		<action name="procSvpgReviewOrder" type="controller" />
+		<action name="procSvpgExtra1" type="controller" />
+		<action name="procSvpgExtra2" type="controller" />
+		<action name="procSvpgExtra3" type="controller" />
+		<action name="procSvpgExtra4" type="controller" />
+		<action name="procSvpgDoPayment" type="controller" method="GET|POST" />
+		<action name="procSvpgReport" type="controller" method="GET|POST" />
+		<action name="procSvpgEscrowDelivery" type="controller" />
+		<action name="procSvpgEscrowConfirm" type="controller" />
+		
+		<action name="getSvpgReceipt" type="model" />
+		<action name="getSvpgCheckUserId" type="model" />
+	</actions>
+</module>

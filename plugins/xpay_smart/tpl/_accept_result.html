@@ -1,0 +1,79 @@
+<?php
+/*
+ payreq_crossplatform 에서 세션에 저장했던 파라미터 값이 유효한지 체크
+ 세션 유지 시간(로그인 유지시간)을 적당히 유지 하거나 세션을 사용하지 않는 경우 DB처리 하시기 바랍니다.
+*/
+session_start();
+if(!isset($_SESSION['PAYREQ_MAP']))
+{
+	echo "세션이 만료 되었거나 유효하지 않은 요청 입니다.";
+	return;
+}
+
+//$payReqMap = $_SESSION['PAYREQ_MAP'];//결제 요청시, Session에 저장했던 파라미터 MAP
+$oSvpgContext = $_SESSION['svpg_http_vars'];
+
+$LGD_RESPCODE = $_REQUEST['LGD_RESPCODE'];
+$LGD_RESPMSG 	= $_REQUEST['LGD_RESPMSG'];
+$LGD_PAYKEY	  = '';
+
+if($LGD_RESPCODE == '0000')
+{
+	$LGD_PAYKEY = $_REQUEST['LGD_PAYKEY'];
+	$payReqMap['LGD_RESPCODE'] = $LGD_RESPCODE;
+	$payReqMap['LGD_RESPMSG'] = $LGD_RESPMSG;
+	$payReqMap['LGD_PAYKEY'] = $LGD_PAYKEY;
+?>
+<load target="filter/submit_xpay_smart_payment.xml" />
+<form method="post" name="LGD_PAYINFO" id="LGD_PAYINFO" act1ion="payres.php">
+<?php
+	/*foreach ($payReqMap as $key => $value) 
+	{
+		if( $key != 'act' && $key != 'mid' && !key != 'vid' )
+		{
+			echo "<input type='hidden' name='$key' id='$key' value='$value'>";
+			echo "name=$key ---> value=$value<BR>";
+		}
+	}*/
+
+	echo "<input type='hidden' name='LGD_PAYKEY' id='LGD_PAYKEY' value='$LGD_PAYKEY'>";
+	echo "<input type='hidden' name='LGD_RESPCODE' id='LGD_RESPCODE' value='$LGD_RESPCODE'>";
+	echo "<input type='hidden' name='LGD_RESPMSG' id='LGD_RESPMSG' value='$LGD_RESPMSG'>";
+
+	foreach ($oSvpgContext as $key => $value) 
+	{
+		if( $key != 'act' && $key != 'mid' && !key != 'vid' )
+		{
+			echo "<input type='hidden' name='$key' id='$key' value='$value'>";
+			//echo "name=$key ---> value=$value<BR>";
+		}
+	}
+?>
+</form>
+<?php
+}
+else
+{
+	echo "LGD_RESPCODE:" + $LGD_RESPCODE + " ,LGD_RESPMSG:" + $LGD_RESPMSG; //인증 실패에 대한 처리 로직 추가
+}
+?>
+<script type="text/javascript">
+(function($) {
+	jQuery(function($) {
+		var frm = document.getElementById('LGD_PAYINFO');
+		procFilter(frm, submit_xpay_smart_payment);
+		//document.getElementById('LGD_PAYINFO').submit();
+	});
+})(jQuery);
+
+function completeXpaySmartSubmitPayment(ret_obj) {
+	if (ret_obj['error']==-1) {
+		alert(ret_obj['message']);
+	}
+	var url = current_url.setQuery('act','dispSvorderOrderComplete').setQuery('order_srl', ret_obj['order_srl']);
+	if (ret_obj['return_url']) {
+		url = ret_obj['return_url'];
+	}
+	location.href=url;
+}
+</script>

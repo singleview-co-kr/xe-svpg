@@ -1,0 +1,14 @@
+<query id="getCancelCompletedLogByTrId" action="select">
+	<tables>
+		<table name="svpg_cancel_log" />
+	</tables>
+	<columns>
+		<column name="transaction_srl" />
+	</columns>
+	<conditions>
+		<condition operation="equal" column="original_pg_tid" var="original_pg_tid" notnull="notnull" />
+		<condition operation="equal" column="state" var="state" default="2" pipe="and" />
+	</conditions>
+	<navigation>
+	</navigation>
+</query>

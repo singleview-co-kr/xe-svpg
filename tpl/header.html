@@ -1,0 +1,24 @@
+<div class="x_page-header">
+	<h1>
+		{$lang->svpg_module}
+		<span class="path" cond="$module_info->mid">
+			&gt; <a href="{getSiteUrl($module_info->domain,'','mid',$module_info->mid)}" target="_blank"|cond="$module=='admin'">{$module_info->mid}<block cond="$module_info->is_default=='Y'">({$lang->is_default})</block></a>
+		</span>
+		<a href="#aboutModule" data-toggle class="x_icon-question-sign">{$lang->help}</a>
+	</h1>
+</div>
+<p class="x_alert x_alert-info" id="aboutModule" hidden>{$lang->about_svpg}</p>
+<ul class="x_nav x_nav-tabs" cond="$module_info">
+	<li class="x_active"|cond="$act=='dispSvpgAdminTransactions'"><a href="{getUrl('','module',$module,'act','dispSvpgAdminTransactions')}">{$lang->payment_details}</a></li>
+	<li class="x_active"|cond="$act=='dispSvpgAdminSvpgList'"><a href="{getUrl('','module',$module,'act','dispSvpgAdminSvpgList')}">{$lang->page_list}</a></li>
+	<li cond="$module_srl" class="x_active"><a href="{getUrl('','module',$module,'act','dispSvpgAdminInsertSvpg')}">{$module_info->mid} {$lang->page_management}</a></li>
+	<li class="x_active"|cond="$act=='dispSvpgAdminInsertSvpg' && !$module_srl"><a href="{getUrl('','module',$module,'act','dispSvpgAdminInsertSvpg')}">{$lang->page_creation}</a></li>
+	<li class="x_active"|cond="$act=='dispSvpgAdminPluginList'"><a href="{getUrl('','module',$module,'act','dispSvpgAdminPluginList')}">{$lang->plugin}</a></li>
+	<li cond="$plugin_srl" class="x_active"|cond="$act=='dispSvpgAdminUpdatePlugin'"><a href="{getUrl('','module',$module,'act','dispSvpgAdminUpdatePlugin')}">{$lang->plugin_configuration}</a></li>
+	<li class="x_active"|cond="$act=='dispSvpgAdminInsertPlugin'"><a href="{getUrl('','module',$module,'act','dispSvpgAdminInsertPlugin')}">{$lang->plugin_creation}</a></li>
+</ul>
+<ul cond="$module_srl" class="x_nav x_nav-tabs">
+	<li cond="$module_srl" class="x_active"|cond="$act=='dispSvpgAdminInsertSvpg'"><a href="{getUrl('act','dispSvpgAdminInsertSvpg')}">{$lang->page_configuration}</a></li>
+	<li class="x_active"|cond="$act=='dispSvpgAdminSkinInfo'"><a href="{getUrl('act','dispSvpgAdminSkinInfo')}">{$lang->skin}</a></li>
+	<li cond="$module_info->mskin && $module_info->use_mobile=='Y'" class="x_active"|cond="$act=='dispSvpgAdminMobileSkinInfo'"><a href="{getUrl('act','dispSvpgAdminMobileSkinInfo')}">{$lang->mobile_skin}</a></li>
+</ul>

@@ -1,0 +1,187 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<lang>
+	<item name="page_list">
+		<value xml:lang="ko"><![CDATA[페이지 목록]]></value>
+	</item>
+	<item name="page_creation">
+		<value xml:lang="ko"><![CDATA[페이지 생성]]></value>
+	</item>
+	<item name="page_management">
+		<value xml:lang="ko"><![CDATA[페이지 관리]]></value>
+	</item>
+	<item name="page_configuration">
+		<value xml:lang="ko"><![CDATA[페이지설정]]></value>
+	</item>
+	<item name="skin_settings">
+		<value xml:lang="ko"><![CDATA[스킨설정]]></value>
+	</item>
+	<item name="forbid_settlement_after">
+		<value xml:lang="ko"><![CDATA[결제 금지일 설정]]></value>
+	</item>
+	<item name="about_forbid_settlement_after">
+		<value xml:lang="ko"><![CDATA[yyyymmddhhmmss 후부터 결제를 금지시킵니다. 공란이면 사용하지 않습니다.]]></value>
+	</item>
+	<item name="plugin">
+		<value xml:lang="ko"><![CDATA[플러그인]]></value>
+	</item>
+	<item name="page">
+		<value xml:lang="ko"><![CDATA[페이지]]></value>
+	</item>
+	<item name="plugin_creation">
+		<value xml:lang="ko"><![CDATA[플러그인 생성]]></value>
+	</item>
+	<item name="plugin_configuration">
+		<value xml:lang="ko"><![CDATA[플러그인 설정]]></value>
+	</item>
+	<item name="payment_details">
+		<value xml:lang="ko"><![CDATA[결제내역]]></value>
+	</item>
+	<item name="plugin_id">
+		<value xml:lang="ko"><![CDATA[플러그인 아이디]]></value>
+	</item>
+	<item name="plugin_title">
+		<value xml:lang="ko"><![CDATA[플러그인 타이틀]]></value>
+	</item>
+	<item name="payment_module">
+		<value xml:lang="ko"><![CDATA[PG모듈]]></value>
+	</item>
+	<item name="about_payment_module">
+		<value xml:lang="ko"><![CDATA[연결할 PG모듈을 선택하세요.]]></value>
+	</item>
+	<item name="state_list" type="array">
+		<item name="1">
+			<value xml:lang="ko"><![CDATA[진행]]></value>
+		</item>
+		<item name="2">
+			<value xml:lang="ko"><![CDATA[완료]]></value>
+		</item>
+		<item name="3">
+			<value xml:lang="ko"><![CDATA[오류]]></value>
+		</item>
+	</item>
+	<item name="payment_method" type="array">
+		<item name="VA">
+			<value xml:lang="ko"><![CDATA[가상계좌]]></value>
+		</item>
+		<item name="CC">
+			<value xml:lang="ko"><![CDATA[신용카드]]></value>
+		</item>
+		<item name="MP">
+			<value xml:lang="ko"><![CDATA[휴대폰]]></value>
+		</item>
+		<item name="IB">
+			<value xml:lang="ko"><![CDATA[계좌이체]]></value>
+		</item>
+		<item name="PP">
+			<value xml:lang="ko"><![CDATA[페이팔]]></value>
+		</item>
+		<item name="BT">
+			<value xml:lang="ko"><![CDATA[무통장입금]]></value>
+		</item>
+	</item>
+	<item name="no_data">
+		<value xml:lang="ko"><![CDATA[자료없음]]></value>
+	</item>
+	<item name="unable_to_issue_receipt">
+		<value xml:lang="ko"><![CDATA[발행불가]]></value>
+	</item>
+	<item name="order_number">
+		<value xml:lang="ko"><![CDATA[주문번호]]></value>
+	</item>
+	<item name="paymethod">
+		<value xml:lang="ko"><![CDATA[결제방식]]></value>
+	</item>
+	<item name="products_ordered">
+		<value xml:lang="ko"><![CDATA[결제상품]]></value>
+	</item>
+	<item name="svpg_module">
+		<value xml:lang="ko"><![CDATA[결제모듈]]></value>
+	</item>
+	<item name="payment_amount">
+		<value xml:lang="ko"><![CDATA[결제금액]]></value>
+	</item>
+	<item name="payment_member">
+		<value xml:lang="ko"><![CDATA[결제회원]]></value>
+	</item>
+	<item name="payment_date">
+		<value xml:lang="ko"><![CDATA[결제일]]></value>
+	</item>
+	<item name="product">
+		<value xml:lang="ko"><![CDATA[상품]]></value>
+	</item>
+	<item name="price">
+		<value xml:lang="ko"><![CDATA[가격]]></value>
+	</item>
+	<item name="status">
+		<value xml:lang="ko"><![CDATA[상태]]></value>
+	</item>
+	<item name="pg_resultcode">
+		<value xml:lang="ko"><![CDATA[결과값(PG)]]></value>
+	</item>
+	<item name="pg_resultmessage">
+		<value xml:lang="ko"><![CDATA[결과메시지(PG)]]></value>
+	</item>
+	<item name="extension">
+		<value xml:lang="ko"><![CDATA[추가정보]]></value>
+	</item>
+	<item name="view_all">
+		<value xml:lang="ko"><![CDATA[전체보기]]></value>
+	</item>
+	<item name="view_today">
+		<value xml:lang="ko"><![CDATA[당일보기]]></value>
+	</item>
+	<item name="view_1month">
+		<value xml:lang="ko"><![CDATA[1개월]]></value>
+	</item>
+	<item name="view_3month">
+		<value xml:lang="ko"><![CDATA[3개월]]></value>
+	</item>
+	<item name="details">
+		<value xml:lang="ko"><![CDATA[상세내용]]></value>
+	</item>
+	<item name="receipt">
+		<value xml:lang="ko"><![CDATA[영수증]]></value>
+	</item>
+	<item name="result">
+		<value xml:lang="ko"><![CDATA[결과]]></value>
+	</item>
+	<item name="about_svpg">
+		<value xml:lang="ko"><![CDATA[결제 플러그인 관리 및 결제내역 조회가 가능합니다. /config/func.inc.php::checkCSRF()에 다음 코드를 추가해야 합니다. $sTargetModule = Context::get('module');	if( $sTargetModule == 'svpg' ) return TRUE;]]></value>
+	</item>
+	<item name="about_plugin">
+		<value xml:lang="ko"><![CDATA[결제 플러그인을 선택해 주세요.]]></value>
+	</item>
+	<item name="msg_invalid_svpg_module">
+		<value xml:lang="ko"><![CDATA[SVPG 모듈정보를 찾을 수 없습니다. 설정을 확인하세요.]]></value>
+	</item>
+	<item name="msg_invaild_plugin_srl">
+		<value xml:lang="ko"><![CDATA[잘못된 SVPG plugin 설정입니다. 설정을 확인하세요.]]></value>
+	</item>
+	<item name="msg_login_required">
+		<value xml:lang="ko"><![CDATA[로그인 후 사용하실 수 있습니다.]]></value>
+	</item>
+	<item name="msg_want_status_change">
+		<value xml:lang="ko"><![CDATA[바꾸시겠습니까?]]></value>
+	</item>
+	<item name="msg_no_payment_list">
+		<value xml:lang="ko"><![CDATA[결제내역이 없습니다.]]></value>
+	</item>
+	<item name="msg_invalid_forbid_settlement_date">
+		<value xml:lang="ko"><![CDATA[결제 금지일은 yyyymmddhhmmss 형식입니다.]]></value>
+	</item>
+	<item name="msg_invalid_sv_tr_id">
+		<value xml:lang="ko"><![CDATA[잘못된 싱글뷰 거래번호입니다.]]></value>
+	</item>
+	<item name="msg_invalid_pg_tr_id">
+		<value xml:lang="ko"><![CDATA[잘못된 PG 거래번호입니다.]]></value>
+	</item>
+	<item name="msg_plugin_not_support_cancel_transaction">
+		<value xml:lang="ko"><![CDATA[취소 기능이 없는 결제 플러그인을 선택하셨습니다. singleview.co.kr에 문의하십시오.]]></value>
+	</item>
+	<item name="msg_no_proper_permission">
+		<value xml:lang="ko"><![CDATA[권한이 없습니다.]]></value>
+	</item>
+	<item name="msg_already_cancelled_pg_tr_id">
+		<value xml:lang="ko"><![CDATA[이미 취소된 결제입니다.]]></value>
+	</item>
+</lang>
